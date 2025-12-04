@@ -225,17 +225,15 @@ export default function FilterPanel({
             <label className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
               <span className="text-sm text-gray-700">Only show universities with scholarships</span>
               <div
-                className={`relative w-12 h-6 rounded-full transition-colors ${
-                  filters.hasScholarship ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
+                className={`relative w-12 h-6 rounded-full transition-colors ${filters.hasScholarship ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
                 onClick={() =>
                   onFilterChange({ ...filters, hasScholarship: !filters.hasScholarship })
                 }
               >
                 <div
-                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                    filters.hasScholarship ? 'transform translate-x-6' : ''
-                  }`}
+                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${filters.hasScholarship ? 'transform translate-x-6' : ''
+                    }`}
                 />
               </div>
             </label>
@@ -295,7 +293,7 @@ export default function FilterPanel({
 
       <aside
         className={`
-        fixed md:sticky top-0 left-0 h-screen bg-white z-50
+        fixed md:sticky top-16 md:top-20 left-0 h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] bg-white z-40
         transition-transform duration-300 ease-in-out
         w-80 md:w-80 shadow-xl md:shadow-none
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}

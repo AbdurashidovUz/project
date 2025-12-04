@@ -13,7 +13,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 7.0,
     deadline: 'Jan 15, 2025',
     hasScholarship: true,
-    logo: '🎓',
+    image: '/images/universities/mit.png',
     urgency: 'high',
   },
   {
@@ -28,7 +28,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 7.5,
     deadline: 'Oct 15, 2024',
     hasScholarship: true,
-    logo: '🏛️',
+    image: '/images/universities/oxford.png',
     urgency: 'high',
   },
   {
@@ -43,7 +43,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.5,
     deadline: 'Mar 1, 2025',
     hasScholarship: true,
-    logo: '🍁',
+    image: '/images/universities/toronto.png',
     urgency: 'medium',
   },
   {
@@ -58,7 +58,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.5,
     deadline: 'May 31, 2025',
     hasScholarship: true,
-    logo: '🦘',
+    image: '/images/universities/melbourne.png',
     urgency: 'low',
   },
   {
@@ -73,7 +73,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.0,
     deadline: 'Jul 15, 2025',
     hasScholarship: false,
-    logo: '⚙️',
+    image: '/images/universities/tum.png',
     urgency: 'low',
   },
   {
@@ -88,7 +88,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.5,
     deadline: 'Feb 28, 2025',
     hasScholarship: true,
-    logo: '🦁',
+    image: '/images/universities/nus.png',
     urgency: 'medium',
   },
   {
@@ -103,7 +103,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.0,
     deadline: 'Apr 30, 2025',
     hasScholarship: true,
-    logo: '🗼',
+    image: '/images/universities/sorbonne.png',
     urgency: 'medium',
   },
   {
@@ -118,7 +118,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.5,
     deadline: 'May 1, 2025',
     hasScholarship: true,
-    logo: '🌷',
+    image: 'https://images.unsplash.com/photo-1509439581779-6298f75bf6e5?w=400&h=400&fit=crop',
     urgency: 'medium',
   },
   {
@@ -133,7 +133,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 7.0,
     deadline: 'Dec 15, 2024',
     hasScholarship: false,
-    logo: '⛰️',
+    image: 'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=400&h=400&fit=crop',
     urgency: 'high',
   },
   {
@@ -148,7 +148,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.5,
     deadline: 'Jan 15, 2025',
     hasScholarship: true,
-    logo: '🏔️',
+    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop',
     urgency: 'high',
   },
   {
@@ -163,7 +163,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.5,
     deadline: 'Jan 31, 2025',
     hasScholarship: true,
-    logo: '🎭',
+    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=400&fit=crop',
     urgency: 'high',
   },
   {
@@ -178,7 +178,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.5,
     deadline: 'Dec 31, 2024',
     hasScholarship: true,
-    logo: '🌟',
+    image: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop',
     urgency: 'high',
   },
   {
@@ -193,7 +193,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.5,
     deadline: 'Jan 15, 2025',
     hasScholarship: true,
-    logo: '🏫',
+    image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=400&fit=crop',
     urgency: 'high',
   },
   {
@@ -208,7 +208,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.5,
     deadline: 'Jan 31, 2025',
     hasScholarship: false,
-    logo: '🌊',
+    image: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=400&h=400&fit=crop',
     urgency: 'high',
   },
   {
@@ -223,7 +223,7 @@ export const mockUniversities: University[] = [
     ieltsRequirement: 6.0,
     deadline: 'Jul 15, 2025',
     hasScholarship: true,
-    logo: '📚',
+    image: 'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=400&h=400&fit=crop',
     urgency: 'low',
   },
 ];

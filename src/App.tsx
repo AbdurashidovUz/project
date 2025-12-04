@@ -5,6 +5,7 @@ import FilterPanel from './components/FilterPanel';
 import UniversityGrid from './components/UniversityGrid';
 import UniversityModal from './components/UniversityModal';
 import AIRecommendation from './components/AIRecommendation';
+import Chatbot from './components/Chatbot';
 import Footer from './components/Footer';
 import { University } from './components/UniversityCard';
 import { mockUniversities } from './data/mockUniversities';
@@ -98,11 +99,7 @@ function App() {
           </div>
         </section>
 
-        <AIRecommendation
-          onRecommendationGenerated={(universities, profile) => {
-            console.log('Recommendations generated:', universities, profile);
-          }}
-        />
+        <AIRecommendation />
       </main>
 
       <Footer />
@@ -112,6 +109,8 @@ function App() {
         isOpen={!!selectedUniversity}
         onClose={handleCloseModal}
       />
+
+      <Chatbot />
     </div>
   );
 }

@@ -12,7 +12,7 @@ export interface University {
   ieltsRequirement: number;
   deadline: string;
   hasScholarship: boolean;
-  logo: string;
+  image: string;
   urgency?: 'high' | 'medium' | 'low';
 }
 
@@ -53,10 +53,15 @@ export default function UniversityCard({
   return (
     <div className="card group cursor-pointer" onClick={() => onViewDetails(university)}>
       <div className="relative">
-        <div className="h-48 bg-gradient-to-br from-blue-50 to-teal-50 flex items-center justify-center p-6">
-          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
-            <span className="text-4xl">{university.logo}</span>
-          </div>
+        <div className="h-48 bg-gradient-to-br from-blue-50 to-teal-50 overflow-hidden">
+          <img
+            src={university.image}
+            alt={university.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+            }}
+          />
         </div>
         <button
           onClick={handleSaveToggle}
@@ -65,14 +70,13 @@ export default function UniversityCard({
         >
           <Heart
             size={20}
-            className={`transition-colors ${
-              saved ? 'fill-red-500 text-red-500' : 'text-gray-400'
-            }`}
+            className={`transition-colors ${saved ? 'fill-red-500 text-red-500' : 'text-gray-400'
+              }`}
           />
         </button>
       </div>
 
-      <div className="p-6">
+      <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <h3 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2">
             {university.name}

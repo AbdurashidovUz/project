@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Sparkles, TrendingUp, Target, Lightbulb } from 'lucide-react';
-import { University } from './UniversityCard';
 
 interface ProfileData {
   academicBackground: string;
@@ -11,9 +10,7 @@ interface ProfileData {
   preferredCountries: string[];
 }
 
-interface AIRecommendationProps {
-  onRecommendationGenerated: (universities: University[], profile: ProfileData) => void;
-}
+// Props interface removed - no props needed for this component
 
 const academicBackgrounds = [
   'High School',
@@ -31,7 +28,7 @@ const countries = [
   { code: 'FR', name: 'France', flag: '🇫🇷' },
 ];
 
-export default function AIRecommendation({ onRecommendationGenerated }: AIRecommendationProps) {
+export default function AIRecommendation() {
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
@@ -72,7 +69,7 @@ export default function AIRecommendation({ onRecommendationGenerated }: AIRecomm
         ieltsRequirement: 6.0,
         deadline: 'May 15, 2025',
         hasScholarship: true,
-        logo: '🎓',
+        image: '/images/universities/tum.png',
         urgency: 'low' as const,
       },
     ],
@@ -88,7 +85,7 @@ export default function AIRecommendation({ onRecommendationGenerated }: AIRecomm
         ieltsRequirement: 6.5,
         deadline: 'April 30, 2025',
         hasScholarship: true,
-        logo: '🏛️',
+        image: '/images/universities/toronto.png',
         urgency: 'medium' as const,
       },
       {
@@ -102,7 +99,7 @@ export default function AIRecommendation({ onRecommendationGenerated }: AIRecomm
         ieltsRequirement: 6.5,
         deadline: 'March 31, 2025',
         hasScholarship: false,
-        logo: '🌟',
+        image: '/images/universities/melbourne.png',
         urgency: 'medium' as const,
       },
     ],
@@ -118,7 +115,7 @@ export default function AIRecommendation({ onRecommendationGenerated }: AIRecomm
         ieltsRequirement: 7.0,
         deadline: 'January 15, 2025',
         hasScholarship: true,
-        logo: '👑',
+        image: '/images/universities/oxford.png',
         urgency: 'high' as const,
       },
     ],
@@ -250,11 +247,10 @@ export default function AIRecommendation({ onRecommendationGenerated }: AIRecomm
                     {countries.map((country) => (
                       <label
                         key={country.code}
-                        className={`flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          profile.preferredCountries.includes(country.code)
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
+                        className={`flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${profile.preferredCountries.includes(country.code)
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                          }`}
                       >
                         <input
                           type="checkbox"
@@ -316,8 +312,15 @@ export default function AIRecommendation({ onRecommendationGenerated }: AIRecomm
                 {mockRecommendations.safe.map((uni) => (
                   <div key={uni.id} className="card p-4">
                     <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <span className="text-2xl">{uni.logo}</span>
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                          src={uni.image}
+                          alt={uni.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+                          }}
+                        />
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold text-gray-800 text-sm">{uni.name}</h4>
@@ -354,8 +357,15 @@ export default function AIRecommendation({ onRecommendationGenerated }: AIRecomm
                 {mockRecommendations.match.map((uni) => (
                   <div key={uni.id} className="card p-4">
                     <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <span className="text-2xl">{uni.logo}</span>
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                          src={uni.image}
+                          alt={uni.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+                          }}
+                        />
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold text-gray-800 text-sm">{uni.name}</h4>
@@ -392,8 +402,15 @@ export default function AIRecommendation({ onRecommendationGenerated }: AIRecomm
                 {mockRecommendations.ambitious.map((uni) => (
                   <div key={uni.id} className="card p-4">
                     <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <span className="text-2xl">{uni.logo}</span>
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                          src={uni.image}
+                          alt={uni.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+                          }}
+                        />
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold text-gray-800 text-sm">{uni.name}</h4>

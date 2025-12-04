@@ -75,13 +75,20 @@ export default function UniversityModal({
               </button>
             </div>
 
-            <div className="px-6 -mt-12">
-              <div className="flex items-end space-x-6">
-                <div className="w-24 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center border-4 border-white">
-                  <span className="text-4xl">{university.logo}</span>
+            <div className="relative px-6 pb-6">
+              <div className="flex items-end space-x-6 -mt-12">
+                <div className="w-32 h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white flex-shrink-0">
+                  <img
+                    src={university.image}
+                    alt={university.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+                    }}
+                  />
                 </div>
-                <div className="flex-1 pb-4">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">{university.name}</h2>
+                <div className="flex-1 pb-2">
+                  <h2 className="text-3xl font-bold text-gray-800 mb-2 leading-tight">{university.name}</h2>
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center space-x-2 text-gray-600">
                       <MapPin size={16} />
@@ -103,11 +110,10 @@ export default function UniversityModal({
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                        className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                          activeTab === tab.id
+                        className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
                             ? 'border-blue-600 text-blue-600'
                             : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
-                        }`}
+                          }`}
                       >
                         <Icon size={16} />
                         <span>{tab.label}</span>
@@ -347,9 +353,8 @@ export default function UniversityModal({
                         <div className="text-sm text-gray-600">Deadline: {term.deadline}</div>
                       </div>
                       <span
-                        className={`badge ${
-                          term.status === 'open' ? 'badge-success' : 'badge-primary'
-                        }`}
+                        className={`badge ${term.status === 'open' ? 'badge-success' : 'badge-primary'
+                          }`}
                       >
                         {term.status === 'open' ? 'Applications Open' : 'Upcoming'}
                       </span>
