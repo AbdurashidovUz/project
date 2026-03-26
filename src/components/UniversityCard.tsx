@@ -1,26 +1,14 @@
-import { Heart, MapPin, Calendar, DollarSign, Award } from 'lucide-react';
-import { useState } from 'react';
-
-export interface University {
-  id: string;
-  name: string;
-  country: string;
-  countryFlag: string;
-  location: string;
-  description: string;
-  tuitionRange: string;
-  ieltsRequirement: number;
-  deadline: string;
-  hasScholarship: boolean;
-  image: string;
-  urgency?: 'high' | 'medium' | 'low';
-}
+import { Heart, MapPin, Calendar, DollarSign, Award, ArrowLeftRight } from 'lucide-react';
+import type { University } from '../lib/database.types';
 
 interface UniversityCardProps {
   university: University;
   onViewDetails: (university: University) => void;
   isSaved?: boolean;
   onToggleSave?: (id: string) => void;
+  isInCompare?: boolean;
+  onToggleCompare?: (id: string) => void;
+  compareDisabled?: boolean;
 }
 
 export default function UniversityCard({
@@ -28,16 +16,21 @@ export default function UniversityCard({
   onViewDetails,
   isSaved = false,
   onToggleSave,
+  isInCompare = false,
+  onToggleCompare,
+  compareDisabled = false,
 }: UniversityCardProps) {
-  const [saved, setSaved] = useState(isSaved);
-
   const handleSaveToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSaved(!saved);
     onToggleSave?.(university.id);
   };
 
-  const getUrgencyColor = (urgency?: string) => {
+  const handleCompareToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleCompare?.(university.id);
+  };
+
+  const getUrgencyColor = (urgency?: string | null) => {
     switch (urgency) {
       case 'high':
         return 'bg-red-100 text-red-700 border-red-200';
@@ -55,25 +48,46 @@ export default function UniversityCard({
       <div className="relative">
         <div className="h-48 bg-gradient-to-br from-blue-50 to-teal-50 overflow-hidden">
           <img
-            src={university.image}
+            src={university.image_url}
             alt={university.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+              e.currentTarget.src =
+                'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
             }}
           />
         </div>
-        <button
-          onClick={handleSaveToggle}
-          className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 z-10"
-          aria-label={saved ? 'Unsave university' : 'Save university'}
-        >
-          <Heart
-            size={20}
-            className={`transition-colors ${saved ? 'fill-red-500 text-red-500' : 'text-gray-400'
+        <div className="absolute top-4 right-4 flex space-x-2">
+          {onToggleCompare && (
+            <button
+              onClick={handleCompareToggle}
+              disabled={compareDisabled && !isInCompare}
+              className={`p-2 rounded-full shadow-md hover:shadow-lg transition-all duration-200 z-10 ${
+                isInCompare
+                  ? 'bg-purple-500 text-white'
+                  : compareDisabled
+                  ? 'bg-white/50 text-gray-300 cursor-not-allowed'
+                  : 'bg-white text-gray-400 hover:text-purple-500'
               }`}
-          />
-        </button>
+              aria-label={isInCompare ? 'Remove from compare' : 'Add to compare'}
+              title={isInCompare ? 'Remove from compare' : 'Add to compare'}
+            >
+              <ArrowLeftRight size={18} />
+            </button>
+          )}
+          <button
+            onClick={handleSaveToggle}
+            className="p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 z-10"
+            aria-label={isSaved ? 'Unsave university' : 'Save university'}
+          >
+            <Heart
+              size={20}
+              className={`transition-colors ${
+                isSaved ? 'fill-red-500 text-red-500' : 'text-gray-400'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       <div className="p-5">
@@ -86,7 +100,7 @@ export default function UniversityCard({
         <div className="flex items-center space-x-2 mb-3">
           <MapPin size={16} className="text-gray-400" />
           <span className="text-sm text-gray-600">
-            <span className="mr-1">{university.countryFlag}</span>
+            <span className="mr-1">{university.country_flag}</span>
             {university.location}, {university.country}
           </span>
         </div>
@@ -100,7 +114,7 @@ export default function UniversityCard({
               <span className="text-sm text-gray-600">Tuition</span>
             </div>
             <span className="text-sm font-semibold text-gray-800">
-              {university.tuitionRange}
+              {university.tuition_range}
             </span>
           </div>
 
@@ -110,7 +124,7 @@ export default function UniversityCard({
               <span className="text-sm text-gray-600">IELTS</span>
             </div>
             <span className="text-sm font-semibold text-gray-800">
-              {university.ieltsRequirement}+
+              {university.ielts_requirement}+
             </span>
           </div>
 
@@ -129,7 +143,7 @@ export default function UniversityCard({
           </div>
         </div>
 
-        {university.hasScholarship && (
+        {university.has_scholarship && (
           <div className="mb-4">
             <span className="badge-success">Scholarship Available</span>
           </div>

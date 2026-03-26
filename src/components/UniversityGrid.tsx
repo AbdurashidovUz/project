@@ -1,21 +1,31 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
-import UniversityCard, { University } from './UniversityCard';
+import { ChevronLeft, ChevronRight, Filter, Loader2 } from 'lucide-react';
+import UniversityCard from './UniversityCard';
+import type { University } from '../lib/database.types';
 
 interface UniversityGridProps {
   universities: University[];
   onViewDetails: (university: University) => void;
   onToggleFilters: () => void;
+  savedUniversities: Set<string>;
+  onToggleSave: (id: string) => void;
+  compareList: string[];
+  onToggleCompare: (id: string) => void;
+  loading?: boolean;
 }
 
 export default function UniversityGrid({
   universities,
   onViewDetails,
   onToggleFilters,
+  savedUniversities,
+  onToggleSave,
+  compareList,
+  onToggleCompare,
+  loading = false,
 }: UniversityGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('relevance');
-  const [savedUniversities, setSavedUniversities] = useState<Set<string>>(new Set());
 
   const itemsPerPage = 9;
   const totalPages = Math.ceil(universities.length / itemsPerPage);
@@ -23,22 +33,22 @@ export default function UniversityGrid({
   const endIndex = startIndex + itemsPerPage;
   const currentUniversities = universities.slice(startIndex, endIndex);
 
-  const handleToggleSave = (id: string) => {
-    setSavedUniversities((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 400, behavior: 'smooth' });
   };
+
+  if (loading) {
+    return (
+      <div className="flex-1 p-8">
+        <div className="text-center py-16">
+          <Loader2 size={48} className="text-blue-600 animate-spin mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading universities...</h3>
+          <p className="text-gray-600">Fetching the latest data</p>
+        </div>
+      </div>
+    );
+  }
 
   if (universities.length === 0) {
     return (
@@ -94,6 +104,15 @@ export default function UniversityGrid({
         </div>
       </div>
 
+      {compareList.length > 0 && (
+        <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-700">
+          <span className="font-semibold">{compareList.length}/3</span> universities selected for comparison.{' '}
+          <a href="#compare" className="underline font-semibold hover:text-purple-800">
+            View comparison →
+          </a>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {currentUniversities.map((university) => (
           <UniversityCard
@@ -101,7 +120,10 @@ export default function UniversityGrid({
             university={university}
             onViewDetails={onViewDetails}
             isSaved={savedUniversities.has(university.id)}
-            onToggleSave={handleToggleSave}
+            onToggleSave={onToggleSave}
+            isInCompare={compareList.includes(university.id)}
+            onToggleCompare={onToggleCompare}
+            compareDisabled={compareList.length >= 3}
           />
         ))}
       </div>

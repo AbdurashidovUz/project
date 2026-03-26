@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import FilterPanel from './components/FilterPanel';
@@ -7,12 +7,14 @@ import UniversityModal from './components/UniversityModal';
 import ProgramGrid from './components/ProgramGrid';
 import ProgramModal from './components/ProgramModal';
 import AIRecommendation from './components/AIRecommendation';
+import CompareUniversities from './components/CompareUniversities';
 import Chatbot from './components/Chatbot';
 import Footer from './components/Footer';
-import { University } from './components/UniversityCard';
-import { Program } from './data/mockPrograms';
+import { useAuth } from './contexts/AuthContext';
+import { fetchUniversities, fetchPrograms, getSavedUniversities, saveUniversity, unsaveUniversity } from './lib/api';
 import { mockUniversities } from './data/mockUniversities';
-import { mockPrograms } from './data/mockPrograms';
+import { mockPrograms, Program } from './data/mockPrograms';
+import type { University } from './lib/database.types';
 
 interface FilterState {
   countries: string[];
@@ -23,12 +25,45 @@ interface FilterState {
   deadline: { start: string; end: string };
 }
 
+// Adapter: convert mock university to database type
+function adaptMockUniversity(mock: typeof mockUniversities[0]): University {
+  return {
+    id: mock.id,
+    name: mock.name,
+    country: mock.country,
+    country_flag: mock.countryFlag,
+    location: mock.location,
+    description: mock.description,
+    tuition_range: mock.tuitionRange,
+    ielts_requirement: mock.ieltsRequirement,
+    deadline: mock.deadline,
+    has_scholarship: mock.hasScholarship,
+    image_url: mock.image,
+    urgency: mock.urgency || null,
+    ranking: null,
+    acceptance_rate: null,
+    student_population: null,
+    international_students_pct: null,
+    programs_offered: null,
+    website: null,
+    tuition_min: null,
+    tuition_max: null,
+    created_at: new Date().toISOString(),
+  };
+}
+
 function App() {
+  const { user } = useAuth();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedUniversity, setSelectedUniversity] = useState<University | null>(null);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [programSearchQuery, setProgramSearchQuery] = useState('');
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [savedUniversityIds, setSavedUniversityIds] = useState<Set<string>>(new Set());
+  const [compareList, setCompareList] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     countries: [],
     tuitionRange: [0, 100000],
@@ -38,42 +73,124 @@ function App() {
     deadline: { start: '', end: '' },
   });
 
-  const filteredUniversities = mockUniversities.filter((uni) => {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesSearch =
-        uni.name.toLowerCase().includes(query) ||
-        uni.country.toLowerCase().includes(query) ||
-        uni.location.toLowerCase().includes(query);
-      if (!matchesSearch) return false;
-    }
+  // Load universities from Supabase (or fall back to mock data)
+  const loadUniversities = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await fetchUniversities({
+        countries: filters.countries,
+        tuitionRange: filters.tuitionRange,
+        ieltsScore: filters.ieltsScore,
+        hasScholarship: filters.hasScholarship,
+        searchQuery: searchQuery || undefined,
+      });
 
-    if (filters.countries.length > 0 && !filters.countries.includes(uni.country)) {
-      return false;
-    }
+      if (data.length > 0) {
+        setUniversities(data);
+      } else {
+        // Fallback to mock data with client-side filtering
+        let filtered = mockUniversities.map(adaptMockUniversity);
 
-    if (filters.hasScholarship && !uni.hasScholarship) {
-      return false;
-    }
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          filtered = filtered.filter(
+            (u) =>
+              u.name.toLowerCase().includes(q) ||
+              u.country.toLowerCase().includes(q) ||
+              u.location.toLowerCase().includes(q)
+          );
+        }
 
-    if (filters.ieltsScore > 0 && uni.ieltsRequirement > filters.ieltsScore) {
-      return false;
-    }
+        if (filters.countries.length > 0) {
+          filtered = filtered.filter((u) => filters.countries.includes(u.country));
+        }
 
-    return true;
-  });
+        if (filters.hasScholarship) {
+          filtered = filtered.filter((u) => u.has_scholarship);
+        }
 
-  const filteredPrograms = mockPrograms.filter((program) => {
-    if (programSearchQuery) {
-      const query = programSearchQuery.toLowerCase();
-      const matchesSearch =
-        program.name.toLowerCase().includes(query) ||
-        program.countries.some(country => country.toLowerCase().includes(query)) ||
-        program.type.toLowerCase().includes(query);
-      if (!matchesSearch) return false;
+        if (filters.ieltsScore > 0) {
+          filtered = filtered.filter((u) => u.ielts_requirement <= filters.ieltsScore);
+        }
+
+        setUniversities(filtered);
+      }
+    } catch (error) {
+      console.error('Error loading universities:', error);
+      setUniversities(mockUniversities.map(adaptMockUniversity));
     }
-    return true;
-  });
+    setLoading(false);
+  }, [searchQuery, filters]);
+
+  // Load programs from Supabase (or fall back to mock data)
+  const loadPrograms = useCallback(async () => {
+    try {
+      const data = await fetchPrograms(programSearchQuery || undefined);
+      if (data.length > 0) {
+        // Adapt Supabase program data to match the Program interface
+        setPrograms(
+          data.map((p) => ({
+            id: p.id,
+            name: p.name,
+            type: p.type,
+            description: p.description,
+            countries: p.countries,
+            countryFlags: p.country_flags,
+            fundingAmount: p.funding_amount,
+            programLevel: p.program_level,
+            duration: p.duration,
+            fieldsOfStudy: p.fields_of_study,
+            eligibility: p.eligibility,
+            deadline: p.deadline,
+            urgency: p.urgency as 'high' | 'medium' | 'low' | undefined,
+            benefits: p.benefits,
+            applicationProcess: p.application_process,
+            website: p.website,
+            image: p.image_url,
+            hasFullFunding: p.has_full_funding,
+          }))
+        );
+      } else {
+        // Fallback
+        let filtered = mockPrograms;
+        if (programSearchQuery) {
+          const q = programSearchQuery.toLowerCase();
+          filtered = filtered.filter(
+            (p) =>
+              p.name.toLowerCase().includes(q) ||
+              p.countries.some((c) => c.toLowerCase().includes(q)) ||
+              p.type.toLowerCase().includes(q)
+          );
+        }
+        setPrograms(filtered);
+      }
+    } catch (error) {
+      console.error('Error loading programs:', error);
+      setPrograms(mockPrograms);
+    }
+  }, [programSearchQuery]);
+
+  // Load saved universities for logged-in user
+  const loadSavedUniversities = useCallback(async () => {
+    if (user) {
+      const saved = await getSavedUniversities(user.id);
+      setSavedUniversityIds(new Set(saved));
+    } else {
+      setSavedUniversityIds(new Set());
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadUniversities();
+  }, [loadUniversities]);
+
+  useEffect(() => {
+    loadPrograms();
+  }, [loadPrograms]);
+
+  useEffect(() => {
+    loadSavedUniversities();
+  }, [loadSavedUniversities]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -99,6 +216,53 @@ function App() {
     setSelectedProgram(null);
   };
 
+  const handleToggleSave = async (universityId: string) => {
+    if (!user) {
+      // Could show auth modal here, but for now just toggle locally
+      setSavedUniversityIds((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(universityId)) {
+          newSet.delete(universityId);
+        } else {
+          newSet.add(universityId);
+        }
+        return newSet;
+      });
+      return;
+    }
+
+    const isSaved = savedUniversityIds.has(universityId);
+    if (isSaved) {
+      const success = await unsaveUniversity(user.id, universityId);
+      if (success) {
+        setSavedUniversityIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(universityId);
+          return newSet;
+        });
+      }
+    } else {
+      const success = await saveUniversity(user.id, universityId);
+      if (success) {
+        setSavedUniversityIds((prev) => new Set(prev).add(universityId));
+      }
+    }
+  };
+
+  const handleToggleCompare = (universityId: string) => {
+    setCompareList((prev) => {
+      if (prev.includes(universityId)) {
+        return prev.filter((id) => id !== universityId);
+      }
+      if (prev.length >= 3) return prev;
+      return [...prev, universityId];
+    });
+  };
+
+  const handleClearCompare = () => {
+    setCompareList([]);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -117,9 +281,14 @@ function App() {
               />
 
               <UniversityGrid
-                universities={filteredUniversities}
+                universities={universities}
                 onViewDetails={handleViewDetails}
                 onToggleFilters={() => setIsFilterOpen(!isFilterOpen)}
+                savedUniversities={savedUniversityIds}
+                onToggleSave={handleToggleSave}
+                compareList={compareList}
+                onToggleCompare={handleToggleCompare}
+                loading={loading}
               />
             </div>
           </div>
@@ -132,15 +301,25 @@ function App() {
                 Special Scholarship Programs
               </h2>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                Explore prestigious scholarship programs from around the world, including Erasmus Mundus, Hungarikum, and more.
+                Explore prestigious scholarship programs from around the world, including Erasmus
+                Mundus, Hungarikum, and more.
               </p>
             </div>
             <ProgramGrid
-              programs={filteredPrograms}
+              programs={programs}
               onViewDetails={handleViewProgramDetails}
             />
           </div>
         </section>
+
+        <CompareUniversities
+          universities={universities}
+          compareList={compareList}
+          onRemoveFromCompare={(id) =>
+            setCompareList((prev) => prev.filter((i) => i !== id))
+          }
+          onClearCompare={handleClearCompare}
+        />
 
         <AIRecommendation />
       </main>

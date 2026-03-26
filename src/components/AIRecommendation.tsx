@@ -1,16 +1,9 @@
 import { useState } from 'react';
-import { Sparkles, TrendingUp, Target, Lightbulb } from 'lucide-react';
-
-interface ProfileData {
-  academicBackground: string;
-  gpa: number;
-  ieltsScore: number;
-  budgetMin: number;
-  budgetMax: number;
-  preferredCountries: string[];
-}
-
-// Props interface removed - no props needed for this component
+import { Sparkles, TrendingUp, Target, Lightbulb, MapPin, DollarSign, Award, Loader2 } from 'lucide-react';
+import { fetchUniversities } from '../lib/api';
+import { getRecommendations, type ScoredUniversity, type StudentProfile } from '../lib/ai';
+import type { University } from '../lib/database.types';
+import { mockUniversities as fallbackData } from '../data/mockUniversities';
 
 const academicBackgrounds = [
   'High School',
@@ -26,12 +19,15 @@ const countries = [
   { code: 'AU', name: 'Australia', flag: '🇦🇺' },
   { code: 'DE', name: 'Germany', flag: '🇩🇪' },
   { code: 'FR', name: 'France', flag: '🇫🇷' },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
+  { code: 'CH', name: 'Switzerland', flag: '🇨🇭' },
 ];
 
 export default function AIRecommendation() {
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [profile, setProfile] = useState<ProfileData>({
+  const [profile, setProfile] = useState<StudentProfile>({
     academicBackground: 'Bachelor Degree',
     gpa: 3.5,
     ieltsScore: 6.5,
@@ -39,6 +35,11 @@ export default function AIRecommendation() {
     budgetMax: 40000,
     preferredCountries: [],
   });
+  const [recommendations, setRecommendations] = useState<{
+    safe: ScoredUniversity[];
+    match: ScoredUniversity[];
+    ambitious: ScoredUniversity[];
+  }>({ safe: [], match: [], ambitious: [] });
 
   const handleCountryToggle = (countryCode: string) => {
     setProfile((prev) => ({
@@ -51,75 +52,119 @@ export default function AIRecommendation() {
 
   const handleGetRecommendations = async () => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    try {
+      // Try fetching from Supabase first
+      let universities: University[] = await fetchUniversities();
+
+      // If Supabase returns empty (e.g., not configured), use fallback
+      if (universities.length === 0) {
+        universities = fallbackData.map((u) => ({
+          id: u.id,
+          name: u.name,
+          country: u.country,
+          country_flag: u.countryFlag,
+          location: u.location,
+          description: u.description,
+          tuition_range: u.tuitionRange,
+          ielts_requirement: u.ieltsRequirement,
+          deadline: u.deadline,
+          has_scholarship: u.hasScholarship,
+          image_url: u.image,
+          urgency: u.urgency || null,
+          ranking: null,
+          acceptance_rate: null,
+          student_population: null,
+          international_students_pct: null,
+          programs_offered: null,
+          website: null,
+          tuition_min: null,
+          tuition_max: null,
+          created_at: new Date().toISOString(),
+        }));
+      }
+
+      const results = getRecommendations(universities, profile);
+      setRecommendations(results);
+    } catch (error) {
+      console.error('Error getting recommendations:', error);
+    }
+
     setIsLoading(false);
     setShowResults(true);
   };
 
-  const mockRecommendations = {
-    safe: [
-      {
-        id: '1',
-        name: 'Tech University',
-        country: 'Germany',
-        countryFlag: '🇩🇪',
-        location: 'Berlin',
-        description: 'Excellent fit based on your profile',
-        tuitionRange: '$15,000-$20,000',
-        ieltsRequirement: 6.0,
-        deadline: 'May 15, 2025',
-        hasScholarship: true,
-        image: '/images/universities/tum.png',
-        urgency: 'low' as const,
-      },
-    ],
-    match: [
-      {
-        id: '2',
-        name: 'Innovation Institute',
-        country: 'Canada',
-        countryFlag: '🇨🇦',
-        location: 'Toronto',
-        description: 'Strong match for your qualifications',
-        tuitionRange: '$25,000-$30,000',
-        ieltsRequirement: 6.5,
-        deadline: 'April 30, 2025',
-        hasScholarship: true,
-        image: '/images/universities/toronto.png',
-        urgency: 'medium' as const,
-      },
-      {
-        id: '3',
-        name: 'Global University',
-        country: 'Australia',
-        countryFlag: '🇦🇺',
-        location: 'Sydney',
-        description: 'Good alignment with your goals',
-        tuitionRange: '$28,000-$32,000',
-        ieltsRequirement: 6.5,
-        deadline: 'March 31, 2025',
-        hasScholarship: false,
-        image: '/images/universities/melbourne.png',
-        urgency: 'medium' as const,
-      },
-    ],
-    ambitious: [
-      {
-        id: '4',
-        name: 'Elite Academy',
-        country: 'United Kingdom',
-        countryFlag: '🇬🇧',
-        location: 'London',
-        description: 'Competitive but within reach',
-        tuitionRange: '$35,000-$40,000',
-        ieltsRequirement: 7.0,
-        deadline: 'January 15, 2025',
-        hasScholarship: true,
-        image: '/images/universities/oxford.png',
-        urgency: 'high' as const,
-      },
-    ],
-  };
+  const renderUniversityCard = (uni: ScoredUniversity, categoryColor: string) => (
+    <div key={uni.id} className="card p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-center space-x-3 mb-3">
+        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+          <img
+            src={uni.image_url}
+            alt={uni.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src =
+                'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+            }}
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-gray-800 text-sm truncate">{uni.name}</h4>
+          <p className="text-xs text-gray-600">
+            {uni.country_flag} {uni.country}
+          </p>
+        </div>
+        <div className={`text-xs font-bold px-2 py-1 rounded-full ${categoryColor}`}>
+          {uni.score}%
+        </div>
+      </div>
+
+      {uni.reasons.length > 0 && (
+        <div className="mb-3">
+          {uni.reasons.slice(0, 2).map((reason, idx) => (
+            <p key={idx} className="text-xs text-gray-500 flex items-start mb-1">
+              <span className="mr-1 text-green-500">✓</span>
+              {reason}
+            </p>
+          ))}
+        </div>
+      )}
+
+      <div className="text-xs text-gray-600 space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center">
+            <DollarSign size={12} className="mr-1" />
+            Tuition:
+          </span>
+          <span className="font-medium">{uni.tuition_range}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="flex items-center">
+            <Award size={12} className="mr-1" />
+            IELTS:
+          </span>
+          <span className="font-medium">{uni.ielts_requirement}+</span>
+        </div>
+        {uni.ranking && (
+          <div className="flex items-center justify-between">
+            <span className="flex items-center">
+              <MapPin size={12} className="mr-1" />
+              Ranking:
+            </span>
+            <span className="font-medium">#{uni.ranking}</span>
+          </div>
+        )}
+      </div>
+
+      {uni.has_scholarship && (
+        <div className="mt-2">
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+            Scholarship Available
+          </span>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <section id="ai-recommendations" className="py-16 bg-gradient-to-br from-gray-50 to-white">
@@ -216,7 +261,7 @@ export default function AIRecommendation() {
                         type="number"
                         value={profile.budgetMin}
                         onChange={(e) =>
-                          setProfile({ ...profile, budgetMin: parseInt(e.target.value) })
+                          setProfile({ ...profile, budgetMin: parseInt(e.target.value) || 0 })
                         }
                         className="input-field"
                         placeholder="Min"
@@ -227,7 +272,7 @@ export default function AIRecommendation() {
                         type="number"
                         value={profile.budgetMax}
                         onChange={(e) =>
-                          setProfile({ ...profile, budgetMax: parseInt(e.target.value) })
+                          setProfile({ ...profile, budgetMax: parseInt(e.target.value) || 0 })
                         }
                         className="input-field"
                         placeholder="Max"
@@ -247,10 +292,11 @@ export default function AIRecommendation() {
                     {countries.map((country) => (
                       <label
                         key={country.code}
-                        className={`flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${profile.preferredCountries.includes(country.code)
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                          }`}
+                        className={`flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          profile.preferredCountries.includes(country.code)
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
                       >
                         <input
                           type="checkbox"
@@ -269,13 +315,13 @@ export default function AIRecommendation() {
 
                 <button
                   onClick={handleGetRecommendations}
-                  disabled={isLoading || profile.preferredCountries.length === 0}
+                  disabled={isLoading}
                   className="w-full btn-primary flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Generating Recommendations...</span>
+                      <Loader2 size={20} className="animate-spin" />
+                      <span>Analyzing Universities...</span>
                     </>
                   ) : (
                     <>
@@ -299,139 +345,76 @@ export default function AIRecommendation() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Safe Schools */}
               <div className="space-y-4">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                     <Target className="text-green-600" size={24} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Safe Schools</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Safe Schools ({recommendations.safe.length})
+                    </h3>
                     <p className="text-sm text-gray-600">High acceptance probability</p>
                   </div>
                 </div>
-                {mockRecommendations.safe.map((uni) => (
-                  <div key={uni.id} className="card p-4">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
-                        <img
-                          src={uni.image}
-                          alt={uni.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800 text-sm">{uni.name}</h4>
-                        <p className="text-xs text-gray-600">
-                          {uni.countryFlag} {uni.country}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-600 mb-2">{uni.description}</p>
-                    <div className="text-xs text-gray-600">
-                      <div className="flex justify-between mb-1">
-                        <span>Tuition:</span>
-                        <span className="font-medium">{uni.tuitionRange}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>IELTS:</span>
-                        <span className="font-medium">{uni.ieltsRequirement}+</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                {recommendations.safe.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No safe schools found. Try adjusting your criteria.
+                  </p>
+                ) : (
+                  recommendations.safe.map((uni) =>
+                    renderUniversityCard(uni, 'bg-green-100 text-green-700')
+                  )
+                )}
               </div>
 
+              {/* Match Schools */}
               <div className="space-y-4">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                     <Lightbulb className="text-blue-600" size={24} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Match Schools</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Match Schools ({recommendations.match.length})
+                    </h3>
                     <p className="text-sm text-gray-600">Good fit for your profile</p>
                   </div>
                 </div>
-                {mockRecommendations.match.map((uni) => (
-                  <div key={uni.id} className="card p-4">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
-                        <img
-                          src={uni.image}
-                          alt={uni.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800 text-sm">{uni.name}</h4>
-                        <p className="text-xs text-gray-600">
-                          {uni.countryFlag} {uni.country}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-600 mb-2">{uni.description}</p>
-                    <div className="text-xs text-gray-600">
-                      <div className="flex justify-between mb-1">
-                        <span>Tuition:</span>
-                        <span className="font-medium">{uni.tuitionRange}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>IELTS:</span>
-                        <span className="font-medium">{uni.ieltsRequirement}+</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                {recommendations.match.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No match schools found. Try adjusting your criteria.
+                  </p>
+                ) : (
+                  recommendations.match.map((uni) =>
+                    renderUniversityCard(uni, 'bg-blue-100 text-blue-700')
+                  )
+                )}
               </div>
 
+              {/* Ambitious Schools */}
               <div className="space-y-4">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
                     <TrendingUp className="text-orange-600" size={24} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800">Ambitious Schools</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Ambitious Schools ({recommendations.ambitious.length})
+                    </h3>
                     <p className="text-sm text-gray-600">Reach for the stars</p>
                   </div>
                 </div>
-                {mockRecommendations.ambitious.map((uni) => (
-                  <div key={uni.id} className="card p-4">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
-                        <img
-                          src={uni.image}
-                          alt={uni.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800 text-sm">{uni.name}</h4>
-                        <p className="text-xs text-gray-600">
-                          {uni.countryFlag} {uni.country}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-600 mb-2">{uni.description}</p>
-                    <div className="text-xs text-gray-600">
-                      <div className="flex justify-between mb-1">
-                        <span>Tuition:</span>
-                        <span className="font-medium">{uni.tuitionRange}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>IELTS:</span>
-                        <span className="font-medium">{uni.ieltsRequirement}+</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                {recommendations.ambitious.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No ambitious schools found. You're a strong candidate!
+                  </p>
+                ) : (
+                  recommendations.ambitious.map((uni) =>
+                    renderUniversityCard(uni, 'bg-orange-100 text-orange-700')
+                  )
+                )}
               </div>
             </div>
           </div>

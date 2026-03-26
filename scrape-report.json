@@ -1,0 +1,161 @@
+{
+  "generatedAt": "2026-03-26T05:59:29.058Z",
+  "totalUniversities": 10,
+  "summary": {
+    "success": 6,
+    "failed": 4,
+    "skipped": 0
+  },
+  "totalPagesScraped": 26,
+  "dataFound": {
+    "withTuition": 2,
+    "withIelts": 0,
+    "withDeadlines": 0,
+    "withAcceptanceRate": 0,
+    "withStudentPop": 3,
+    "withScholarshipInfo": 5,
+    "withPrograms": 0
+  },
+  "updatedUniversities": 5,
+  "results": [
+    {
+      "name": "Australian National University",
+      "country": "Australia",
+      "status": "success",
+      "pagesScraped": 2,
+      "error": null,
+      "dataFound": {
+        "tuition": [],
+        "ielts": [],
+        "deadlines": [],
+        "scholarship": true
+      },
+      "updates": {
+        "has_scholarship": true
+      }
+    },
+    {
+      "name": "Batchelor Institute of Indigenous Tertiary Education",
+      "country": "Australia",
+      "status": "failed",
+      "pagesScraped": 0,
+      "error": "Could not fetch main page",
+      "dataFound": null,
+      "updates": {}
+    },
+    {
+      "name": "Central Queensland University",
+      "country": "Australia",
+      "status": "success",
+      "pagesScraped": 5,
+      "error": null,
+      "dataFound": {
+        "tuition": [
+          "$1000"
+        ],
+        "ielts": [],
+        "deadlines": [],
+        "scholarship": true
+      },
+      "updates": {
+        "has_scholarship": true,
+        "student_population": 2022
+      }
+    },
+    {
+      "name": "Curtin University",
+      "country": "Australia",
+      "status": "success",
+      "pagesScraped": 4,
+      "error": null,
+      "dataFound": {
+        "tuition": [],
+        "ielts": [],
+        "deadlines": [],
+        "scholarship": false
+      },
+      "updates": {}
+    },
+    {
+      "name": "Edith Cowan University",
+      "country": "Australia",
+      "status": "failed",
+      "pagesScraped": 0,
+      "error": "Could not fetch main page",
+      "dataFound": null,
+      "updates": {}
+    },
+    {
+      "name": "Engineering Institute of Technology",
+      "country": "Australia",
+      "status": "failed",
+      "pagesScraped": 0,
+      "error": "Could not fetch main page",
+      "dataFound": null,
+      "updates": {}
+    },
+    {
+      "name": "La Trobe University",
+      "country": "Australia",
+      "status": "success",
+      "pagesScraped": 5,
+      "error": null,
+      "dataFound": {
+        "tuition": [],
+        "ielts": [],
+        "deadlines": [],
+        "scholarship": true
+      },
+      "updates": {
+        "has_scholarship": true,
+        "student_population": 1300
+      }
+    },
+    {
+      "name": "Royal Melbourne Institute of Technology",
+      "country": "Australia",
+      "status": "success",
+      "pagesScraped": 5,
+      "error": null,
+      "dataFound": {
+        "tuition": [],
+        "ielts": [],
+        "deadlines": [],
+        "scholarship": true
+      },
+      "updates": {
+        "has_scholarship": true,
+        "student_population": 2023
+      }
+    },
+    {
+      "name": "University of Melbourne",
+      "country": "Australia",
+      "status": "failed",
+      "pagesScraped": 0,
+      "error": "Could not fetch main page",
+      "dataFound": null,
+      "updates": {}
+    },
+    {
+      "name": "University of New South Wales",
+      "country": "Australia",
+      "status": "success",
+      "pagesScraped": 5,
+      "error": null,
+      "dataFound": {
+        "tuition": [
+          "costs do I need to know? Application fees An online application costs A$150",
+          "costs of at least A$29,710",
+          "fee waiver? An AUD $150"
+        ],
+        "ielts": [],
+        "deadlines": [],
+        "scholarship": true
+      },
+      "updates": {
+        "has_scholarship": true
+      }
+    }
+  ]
+}

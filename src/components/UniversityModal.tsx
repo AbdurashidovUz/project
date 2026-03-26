@@ -1,6 +1,6 @@
 import { X, MapPin, Globe, DollarSign, Calendar, Award, BookOpen, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
-import { University } from './UniversityCard';
+import type { University } from '../lib/database.types';
 
 interface UniversityModalProps {
   university: University | null;
@@ -79,24 +79,32 @@ export default function UniversityModal({
               <div className="flex items-end space-x-6 -mt-12">
                 <div className="w-32 h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white flex-shrink-0">
                   <img
-                    src={university.image}
+                    src={university.image_url}
                     alt={university.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+                      e.currentTarget.src =
+                        'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
                     }}
                   />
                 </div>
                 <div className="flex-1 pb-2">
-                  <h2 className="text-3xl font-bold text-gray-800 mb-2 leading-tight">{university.name}</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-2 leading-tight">
+                    {university.name}
+                  </h2>
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center space-x-2 text-gray-600">
                       <MapPin size={16} />
                       <span className="text-sm">
-                        <span className="mr-1">{university.countryFlag}</span>
+                        <span className="mr-1">{university.country_flag}</span>
                         {university.location}, {university.country}
                       </span>
                     </div>
+                    {university.ranking && (
+                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
+                        Rank #{university.ranking}
+                      </span>
+                    )}
                     {aiRecommendation && getRecommendationBadge()}
                   </div>
                 </div>
@@ -110,10 +118,11 @@ export default function UniversityModal({
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                        className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+                        className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                          activeTab === tab.id
                             ? 'border-blue-600 text-blue-600'
                             : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300'
-                          }`}
+                        }`}
                       >
                         <Icon size={16} />
                         <span>{tab.label}</span>
@@ -131,12 +140,6 @@ export default function UniversityModal({
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">About</h3>
                   <p className="text-gray-600 leading-relaxed">{university.description}</p>
-                  <p className="text-gray-600 leading-relaxed mt-4">
-                    Founded with a mission to provide world-class education, this institution has
-                    become a leading center for academic excellence and research. Students from over
-                    100 countries choose to study here, creating a diverse and vibrant campus
-                    community.
-                  </p>
                 </div>
 
                 <div>
@@ -144,22 +147,49 @@ export default function UniversityModal({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-600 mb-1">Student Population</div>
-                      <div className="text-lg font-semibold text-gray-800">25,000+</div>
+                      <div className="text-lg font-semibold text-gray-800">
+                        {university.student_population
+                          ? university.student_population.toLocaleString()
+                          : 'N/A'}
+                      </div>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-600 mb-1">International Students</div>
-                      <div className="text-lg font-semibold text-gray-800">30%</div>
+                      <div className="text-lg font-semibold text-gray-800">
+                        {university.international_students_pct
+                          ? `${university.international_students_pct}%`
+                          : 'N/A'}
+                      </div>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-600 mb-1">Programs Offered</div>
-                      <div className="text-lg font-semibold text-gray-800">200+</div>
+                      <div className="text-lg font-semibold text-gray-800">
+                        {university.programs_offered ? `${university.programs_offered}+` : 'N/A'}
+                      </div>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
-                      <div className="text-sm text-gray-600 mb-1">Student-Faculty Ratio</div>
-                      <div className="text-lg font-semibold text-gray-800">12:1</div>
+                      <div className="text-sm text-gray-600 mb-1">Acceptance Rate</div>
+                      <div className="text-lg font-semibold text-gray-800">
+                        {university.acceptance_rate ? `${university.acceptance_rate}%` : 'N/A'}
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                {university.website && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Website</h3>
+                    <a
+                      href={university.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      <Globe size={16} />
+                      <span>{university.website}</span>
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 
@@ -221,7 +251,7 @@ export default function UniversityModal({
                     <ul className="space-y-2 text-gray-600">
                       <li className="flex items-start">
                         <span className="mr-2">•</span>
-                        <span>IELTS: {university.ieltsRequirement}+ overall</span>
+                        <span>IELTS: {university.ielts_requirement}+ overall</span>
                       </li>
                       <li className="flex items-start">
                         <span className="mr-2">•</span>
@@ -237,22 +267,10 @@ export default function UniversityModal({
                   <div className="p-4 border border-gray-200 rounded-lg">
                     <h4 className="font-semibold text-gray-700 mb-2">Required Documents</h4>
                     <ul className="space-y-2 text-gray-600">
-                      <li className="flex items-start">
-                        <span className="mr-2">•</span>
-                        <span>Statement of Purpose</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="mr-2">•</span>
-                        <span>Letters of Recommendation (2-3)</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="mr-2">•</span>
-                        <span>Updated CV/Resume</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="mr-2">•</span>
-                        <span>Valid Passport Copy</span>
-                      </li>
+                      <li className="flex items-start"><span className="mr-2">•</span><span>Statement of Purpose</span></li>
+                      <li className="flex items-start"><span className="mr-2">•</span><span>Letters of Recommendation (2-3)</span></li>
+                      <li className="flex items-start"><span className="mr-2">•</span><span>Updated CV/Resume</span></li>
+                      <li className="flex items-start"><span className="mr-2">•</span><span>Valid Passport Copy</span></li>
                     </ul>
                   </div>
                 </div>
@@ -266,7 +284,7 @@ export default function UniversityModal({
                   <div className="p-6 bg-gradient-to-br from-blue-50 to-teal-50 rounded-lg">
                     <div className="text-sm text-gray-600 mb-2">Annual Tuition Fee</div>
                     <div className="text-3xl font-bold text-gray-800 mb-1">
-                      {university.tuitionRange}
+                      {university.tuition_range}
                     </div>
                     <div className="text-sm text-gray-600">Per academic year</div>
                   </div>
@@ -281,13 +299,6 @@ export default function UniversityModal({
                       <div className="text-lg font-semibold text-gray-800">$12,000/year</div>
                     </div>
                   </div>
-
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-gray-700">
-                      Note: Tuition fees may vary by program. Additional fees may apply for specific
-                      courses, materials, and services.
-                    </p>
-                  </div>
                 </div>
               </div>
             )}
@@ -295,29 +306,14 @@ export default function UniversityModal({
             {activeTab === 'scholarships' && (
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-gray-800">Scholarship Opportunities</h3>
-                {university.hasScholarship ? (
+                {university.has_scholarship ? (
                   <div className="space-y-4">
                     {[
-                      {
-                        name: 'Merit Scholarship',
-                        amount: 'Up to 50% tuition',
-                        criteria: 'Based on academic excellence',
-                      },
-                      {
-                        name: 'International Student Scholarship',
-                        amount: '$5,000 - $15,000',
-                        criteria: 'For outstanding international students',
-                      },
-                      {
-                        name: 'Need-based Financial Aid',
-                        amount: 'Varies',
-                        criteria: 'Based on financial need assessment',
-                      },
+                      { name: 'Merit Scholarship', amount: 'Up to 50% tuition', criteria: 'Based on academic excellence' },
+                      { name: 'International Student Scholarship', amount: '$5,000 - $15,000', criteria: 'For outstanding international students' },
+                      { name: 'Need-based Financial Aid', amount: 'Varies', criteria: 'Based on financial need assessment' },
                     ].map((scholarship) => (
-                      <div
-                        key={scholarship.name}
-                        className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
-                      >
+                      <div key={scholarship.name} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
                         <div className="flex items-start justify-between mb-2">
                           <h4 className="font-semibold text-gray-800">{scholarship.name}</h4>
                           <span className="badge-success">{scholarship.amount}</span>
@@ -328,9 +324,7 @@ export default function UniversityModal({
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-600">
-                      No scholarships currently available for this university.
-                    </p>
+                    <p className="text-gray-600">No scholarships currently available for this university.</p>
                   </div>
                 )}
               </div>
@@ -340,44 +334,22 @@ export default function UniversityModal({
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-gray-800">Application Deadlines</h3>
                 <div className="space-y-4">
-                  {[
-                    { term: 'Fall 2025', deadline: 'March 1, 2025', status: 'upcoming' },
-                    { term: 'Spring 2026', deadline: 'October 1, 2025', status: 'open' },
-                  ].map((term) => (
-                    <div
-                      key={term.term}
-                      className="p-4 border border-gray-200 rounded-lg flex items-center justify-between"
-                    >
-                      <div>
-                        <div className="font-semibold text-gray-800 mb-1">{term.term}</div>
-                        <div className="text-sm text-gray-600">Deadline: {term.deadline}</div>
-                      </div>
-                      <span
-                        className={`badge ${term.status === 'open' ? 'badge-success' : 'badge-primary'
-                          }`}
-                      >
-                        {term.status === 'open' ? 'Applications Open' : 'Upcoming'}
-                      </span>
+                  <div className="p-4 border border-gray-200 rounded-lg flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-gray-800 mb-1">Main Deadline</div>
+                      <div className="text-sm text-gray-600">Deadline: {university.deadline}</div>
                     </div>
-                  ))}
-                </div>
+                    <span className="badge badge-primary">Upcoming</span>
+                  </div>
 
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-semibold text-blue-900 mb-2">Important Dates</h4>
-                  <ul className="space-y-2 text-sm text-blue-800">
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Early Decision: November 1</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Regular Decision: January 15</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Decision Notification: Within 4-6 weeks</span>
-                    </li>
-                  </ul>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-semibold text-blue-900 mb-2">Important Dates</h4>
+                    <ul className="space-y-2 text-sm text-blue-800">
+                      <li className="flex items-start"><span className="mr-2">•</span><span>Early Decision: November 1</span></li>
+                      <li className="flex items-start"><span className="mr-2">•</span><span>Regular Decision: January 15</span></li>
+                      <li className="flex items-start"><span className="mr-2">•</span><span>Decision Notification: Within 4-6 weeks</span></li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             )}
@@ -388,8 +360,16 @@ export default function UniversityModal({
               Close
             </button>
             <div className="flex items-center space-x-3">
-              <button className="btn-secondary">Save University</button>
-              <button className="btn-primary">Apply Now</button>
+              {university.website && (
+                <a
+                  href={university.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                >
+                  Visit Website
+                </a>
+              )}
             </div>
           </div>
         </div>

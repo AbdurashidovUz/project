@@ -1,64 +1,51 @@
 # UniSearch
 
-UniSearch is a modern web application designed to simplify the university search process for students. It provides a comprehensive platform to discover, filter, and learn about universities worldwide, featuring an AI-powered recommendation system to help students find their perfect academic match.
+UniSearch is a modern, full-stack web application designed to simplify the university search process for students. It provides a comprehensive platform to discover, filter, and learn about universities worldwide, featuring a Gemini-powered AI assistant and recommendation system to help students find their perfect academic match.
 
 ## Features Implemented
 
 ### 🔍 University Search & Discovery
-- **Smart Search**: Instantly search for universities by name, country, or location.
+- **Smart Search**: Instantly search for universities by name, country, or location from our real database of 340+ universities across 35 countries.
 - **Advanced Filtering**: Refine results based on:
   - **Country**: Filter by preferred study destinations.
   - **Tuition Range**: Set a budget that fits your financial plan.
   - **IELTS Score**: Find universities that match your language proficiency.
   - **Scholarship Availability**: Easily identify institutions offering financial aid.
 
-### Detailed University Profiles
-- **Interactive Modals**: View comprehensive details about each university without leaving the search page.
-- **Key Information**: Access crucial data like ranking, acceptance rate, tuition fees, and application deadlines.
+### 📊 Comprehensive Data Pipeline
+- **Automated Web Scraper**: A built-in Node.js scraper tool that visits university websites to automatically extract and update tuition fees, deadlines, IELTS requirements, and scholarship information.
+- **Supabase Backend**: Fully integrated PostgreSQL database handling real-time data for universities, academic programs, and users.
 
-### AI-Powered Recommendations
-- **Personalized Profiling**: Input your academic background, GPA, IELTS score, and budget.
-- **Smart Categorization**: Receive tailored recommendations categorized into:
+### 🤖 Gemini AI-Powered Assistant & Recommendations
+- **Interactive Chatbot**: Integrated with **Google Gemini 2.0 Flash API**, providing natural, context-aware conversations using real university data from the database.
+- **Smart Recommendations**: Enter your GPA, IELTS score, and budget to receive tailored recommendations categorized into:
   - **Safe Schools**: High probability of acceptance.
   - **Match Schools**: Good alignment with your profile.
   - **Ambitious Schools**: Reach goals for top-tier institutions.
 
-### Interactive Chatbot
-- **Virtual Assistant**: A built-in chatbot to answer common questions regarding:
-  - Admission requirements
-  - Scholarship opportunities
-  - Visa processes
-  - Campus life
+### 👤 User Accounts & Authentication
+- **Secure Authentication**: Full Sign Up/Login functionality via Supabase Auth.
+- **User Profiles & Saves**: Users can save their preferred universities to their profile for easy access later.
 
-### Modern & Responsive Design
+### ⚖️ Compare Universities Tool
+- **Side-by-Side Comparison**: Select up to 3 universities and compare them head-to-head on key metrics like cost, world ranking, acceptance rates, and student population.
+
+### 📱 Modern & Responsive Design
 - **Mobile-First**: Fully responsive interface that works seamlessly on desktop, tablet, and mobile devices.
 - **UI/UX**: Clean, intuitive, and visually appealing design built with Tailwind CSS.
 
 ## Tech Stack
 
 - **Frontend**: React, TypeScript
+- **Backend & Database**: Supabase (PostgreSQL, Auth, RLS)
+- **AI Integration**: Google Gemini API (2.0 Flash)
+- **Data Scraping**: Node.js, Cheerio
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 
 ## Things Waiting to be Done
 
-### Backend Integration
-- **Database Connection**: Migrate from mock data to a real database (e.g., Supabase) for dynamic content management.
-- **API Development**: Build robust APIs to serve university data and handle user requests.
-
-### Real AI Integration
-- **LLM Integration**: Connect the chatbot and recommendation engine to a real Large Language Model (e.g., OpenAI, Gemini) for dynamic and context-aware responses.
-
-###  User Accounts
-- **Authentication**: Implement Sign Up/Login functionality.
-- **User Profiles**: Allow users to save their preferences, shortlisted universities, and application progress.
-
 ### Application Management
 - **Direct Applications**: Enable students to apply to universities directly through the platform.
 - **Document Vault**: Secure storage for application documents (transcripts, SOPs, etc.).
-
-### Comparison Tool
-- **Side-by-Side Comparison**: A feature to compare multiple universities based on key metrics like cost, ranking, and location.
-
-
