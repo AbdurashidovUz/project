@@ -1,7 +1,7 @@
 import { X, MapPin, Globe, DollarSign, Calendar, Award, BookOpen, GraduationCap, ExternalLink, Users, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import type { University } from '../lib/database.types';
-import { universityImages } from '../data/universityImages';
+import { getUniversityImageUrl } from '../data/universityImages';
 
 interface UniversityModalProps {
   university: University | null;
@@ -21,6 +21,12 @@ export default function UniversityModal({
   >('overview');
 
   if (!isOpen || !university) return null;
+
+  // Generate a fallback search URL if no website is stored
+  const websiteUrl = university.website ||
+    `https://www.google.com/search?q=${encodeURIComponent(university.name + ' official website')}`;
+  const admissionUrl = university.admission_url ||
+    `https://www.google.com/search?q=${encodeURIComponent(university.name + ' admission apply')}`;
 
   const getRecommendationBadge = () => {
     switch (aiRecommendation) {
@@ -56,22 +62,9 @@ export default function UniversityModal({
     { id: 'deadlines', label: 'Deadlines', icon: Calendar },
   ];
 
-  const fallbackImages = [
-    'https://images.unsplash.com/photo-1509439581779-6298f75bf6e5?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=400&fit=crop'
-  ];
-  const nameHash = university.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const fallbackGraphic = fallbackImages[nameHash % fallbackImages.length];
-  
-  // Try local user folder -> then Wikipedia auto-match -> then beautiful fallback
-  const imageUrl = `/images/universities/${university.name}.jpg`;
-  const backupUrl = universityImages[university.name] || fallbackGraphic;
+  // Use the same smart helper as UniversityCard: named → country-pool → generic-pool
+  const imageUrl = getUniversityImageUrl(university.name, university.country);
+
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -94,22 +87,19 @@ export default function UniversityModal({
             </div>
 
             <div className="relative px-6 pb-6">
-              <div className="flex items-end space-x-6 -mt-12">
-                <div className="w-32 h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white flex-shrink-0">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
+                <div className="-mt-12 sm:-mt-16 w-32 h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white flex-shrink-0 relative z-10">
                   <img
                     src={imageUrl}
                     alt={university.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      if (e.currentTarget.src !== (!e.currentTarget.src.includes('unsplash') ? backupUrl : '')) {
-                        e.currentTarget.src = backupUrl;
-                      } else {
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop';
-                      }
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop';
                     }}
                   />
                 </div>
-                <div className="flex-1 pb-2">
+                <div className="flex-1 pt-2 sm:pt-4">
                   <h2 className="text-3xl font-bold text-gray-800 mb-2 leading-tight">
                     {university.name}
                   </h2>
@@ -127,6 +117,14 @@ export default function UniversityModal({
                       </span>
                     )}
                     {aiRecommendation && getRecommendationBadge()}
+                  </div>
+                  <div className="flex items-center gap-4 mt-3">
+                    <a href={websiteUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
+                      <Globe size={14} /> Main Website
+                    </a>
+                    <a href={admissionUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-teal-600 hover:text-teal-800 flex items-center gap-1 transition-colors">
+                      <ExternalLink size={14} /> Admission Portal
+                    </a>
                   </div>
                 </div>
               </div>
@@ -420,28 +418,24 @@ export default function UniversityModal({
               Close
             </button>
             <div className="flex items-center space-x-3">
-              {university.admission_url && (
-                <a
-                  href={university.admission_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary flex items-center gap-2"
-                >
-                  <ExternalLink size={16} />
-                  Apply Now
-                </a>
-              )}
-              {university.website && (
-                <a
-                  href={university.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-ghost flex items-center gap-2"
-                >
-                  <Globe size={16} />
-                  Visit Website
-                </a>
-              )}
+              <a
+                href={admissionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary flex items-center gap-2"
+              >
+                <ExternalLink size={16} />
+                Apply Now
+              </a>
+              <a
+                href={websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost flex items-center gap-2"
+              >
+                <Globe size={16} />
+                Visit Website
+              </a>
             </div>
           </div>
         </div>
