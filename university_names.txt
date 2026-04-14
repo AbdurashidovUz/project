@@ -1,0 +1,346 @@
+Osaka University of Commerce
+Hiroshima University
+Hokkaido University of Education
+Hokkaido University
+Hokkaido University of Health Sciences
+Hiroshima University of Economics
+Osaka University of Economics & Law
+Keio University
+Kobe University
+Korea University
+Kobe University of Mercantile Marine
+Kyoto University of Foreign Studies
+Kyoto University of Education
+Kyoto University of Art and Design
+Kyoto University
+Kyushu University of Nursing and SocialWelfare
+Kyushu University
+Nagoya University
+Nagoya University of Arts
+Nagoya University of Commerce and Business Administration
+Nagoya University of Foreign Studies
+Osaka University of Foreign Studies
+Osaka University of Arts
+Osaka University of Education
+Osaka University
+Osaka University of Economics
+Osaka University of Health and Sport Sciences
+Osaka University of Pharmaceutical Sciences
+Science University of Tokyo
+Tokyo Institute of Technology
+Korea University
+Korea University of Technology and Education
+Seoul National University of Education
+Seoul National University
+Seoul National University of Technology
+Seoul National University of Science and Technology
+University of Science and Technology
+Yonsei University
+Pusan National University of Education
+Korea National Sport University
+Kwangju National University of Education
+Namseoul University
+Pyongtaek University
+Myongji University
+Konyang University
+Korea National University of Cultural Heritage
+Kyungnam University
+Pohang University of Science and Technology
+Kyungwon University
+Nambu University
+Korea Nazarene University
+Kwangshin University
+Mokpo National University
+Daejin University
+Duksung Women's University
+Sun Yat-Sen University
+Fudan University
+Sun Yat-Sen University of Medical Sciences
+Nanjing University of Chemical Technology
+Nanjing University
+Nanjing University of Economics
+Nanjing University of Posts and Telecommunications
+Nanjing University of Science and Technology
+Nanjing University of Traditional Chinese Medicine
+Nanjing University of Aeronautics and Astronautics
+Peking University
+Tsinghua University
+Zhejiang University
+Zhejiang University of Technology
+Nanjing University of Information Science and Technology
+Shanghai Jiao Tong University
+Jiangsu University of Science and Technology
+Huizhou University
+International Business University of Beijing
+Jiaying University
+Jingdezhen China Institute
+Inner Mongolia University
+Henan Buddhist College
+Hunan Normal University
+Gansu Agricultural University
+Universiti Putra Malaysia
+Universiti Sains Malaysia
+Darul Hikmah Islamic College
+Petronas Technology University
+Institute of Teachers Education, Melaka
+Binary University College of Managemant & Entrepreneurship
+International Islamic College
+Darul Takzim Institute of Technology
+International Islamic University
+Institute of Teachers Education, Malay Language
+Iact College
+Institute of Teachers Education, Keningau
+International University College of Technology Twintech (IUCTT)
+Institute of Teachers Education, Tuanku Bainun
+Institute of Teachers Education, Tengku Ampuan Afzan
+Institute of Teachers Education, Perlis
+Institute of Teachers Education, Rajang
+Institute of Teachers Education, Batu Lintang
+Institute of Teachers Education, Sultan Abdul Halim
+Al-Bukhari International University
+Nanyang Technological University
+National University of Singapore
+Singapore Institute of Management (SIM)
+Singapore Management University
+Taoist College Singapore
+Singapore Institute of Technology
+Singapore University of Technology and Design
+Institute of Technical Education
+Istanbul University
+Istanbul University 2
+Istanbul University 3
+Istanbul University 4
+Istanbul University 5
+Istanbul University 6
+Istanbul University 7
+Istanbul University 8
+Istanbul University 9
+Istanbul University 10
+Istanbul University 11
+Istanbul University 12
+Istanbul University 13
+Istanbul University 14
+Istanbul University 15
+Istanbul University 16
+Istanbul University 17
+Istanbul University 18
+Istanbul University 19
+Istanbul University 20
+University of Delhi
+Indian Institute of Technology, Bombay
+Indian Institute of Technology, Delhi
+Indian Institute of Technology, Gandhinagar
+Indian Institute of Technology, Guwahati
+Indian Institute of Technology, Hyderabad
+Indian Institute of Technology, Kanpur
+Indian Institute of Technology, Kharagpur
+Indian Institute of Technology, Madras
+Indian Institute of Technology, Roorkee
+Indian Institute of Technology, Patna
+Indian Institute of Technology, Indore
+Indian Institute of Technology, Jodhpur
+MIT World Peace University
+Shreemati Nathibai Damodar Thackersey Women's University
+Chulalongkorn University
+Mahidol University
+Mahidol University International College
+Suranaree University of Technology
+Nation University
+Rajamangala University of Technology, Lanna Nan
+Lampang College of Commerce and Technology
+Krirk University
+Siam University
+Asian University of Science and Technology
+Bogor Agricultural University
+Swiss German University
+Binus University
+Duta Bangsa University
+Perbanas Institute
+Trisakti Institute of Tourism
+Universitas Narotama
+Universitas Negeri Surabaya
+Institut Teknologi Sepuluh Nopember
+STMIK AMIKOM Yogyakarta
+Adventist University of the Philippines
+National University
+Northwestern University of the Philippines
+Polytechnic University of the Philippines
+Technological University of the Philippines
+University of the Philippines Baguio
+University of the Philippines Diliman
+University of the Philippines Visayas - Cebu High School
+Phan Chau Trinh University
+Duy Tan University
+Taipei University
+Taipei University 2
+Taipei University 3
+Taipei University 4
+Taipei University 5
+Taipei University 6
+Taipei University 7
+Taipei University 8
+Taipei University 9
+Taipei University 10
+City University of Hong Kong
+The Chinese University of Hong Kong
+The University of Hong Kong
+The Hong Kong University of Science and Technology
+The Education University of Hong Kong
+The Hang Seng University of Hong Kong
+The Chinese University of Hong Kong
+Hong Kong Shue Yan University
+Qauid-e-Awam University of Engineering Sciences & Technology
+University of Education
+Institute of Management Sciences, Peshawar
+Hahnamann Honoeopathic Medical College
+Preston Institute of Management Sciences and Technology (PIMSAT)
+National University
+Khulna University of Engineering And Technology
+North East University Bangladesh
+University of Information Technology & Sciences
+Shahjalal University of Science and Technology
+Tashkent State Agrarian University
+Tashkent Institute of Irrigation and Melioration
+Nukus State Teachers Training Institute
+Tashkent Automobile and Roads Institute
+Turin Polytechnic University In Tashkent
+Abylai Khan University
+Kazak American University
+Western Kazakhstan Agricultural University
+Semey State Medical University
+Pavlodar University
+University of Cambridge
+University of Edinburgh
+Imperial College London
+University of Oxford
+University College London, University of London
+Trinity College Bristol
+University of Birmingham
+University of Liverpool
+Liverpool John Moores University
+Glasgow Caledonian University
+Newcastle University
+London Guildhall University
+Middlesex University - London
+Loughborough University
+ifs University College
+Hochschule Neu-Ulm, Hochschule Neu-Ulm University of applied sciences
+Schiller International University, Heidelberg
+SRH University of Applied Sciences
+International School of New Media, University of Lübeck
+Westphalian University of Applied Sciences
+Jacobs University Bremen
+Hamburg University of Applied Sciences (HAW Hamburg)
+Rosenheim University of Applied Sciences
+Hochschule Mittweida, University of Applied Sciences
+International University in Germany
+Technical University of Applied Sciences Augsburg
+European College of Liberal Arts
+École Polytechnique
+National Institute of Applied Sciences of Toulouse
+Institute Français de la Mode
+American University of Paris
+University of Burgundy
+Schiller International University, Paris
+Schiller International University, Strasbourg
+IMT Atlantique
+Delft University of Technology
+University of Amsterdam
+European Leadership University
+University of Sint Eustatius School of Medicine
+International University School of Medicine (IUSOM)
+EPFL - EPF Lausanne
+ETHZ - ETH Zurich
+Schiller International University, American College of Switzerland
+PHSZ - University of Teacher Education Schwyz
+University of Applied Sciences Aargau
+University of Bologna
+University of Catania
+Campus Bio-Medico University of Rome
+University of Ferrara
+Free University Institute "Carlo Cattaneo"
+Malmö University College
+Jönköping University College
+Stockholm Institute of Education
+University College of Gävle
+Masaryk University
+University of Education Hradec Kralove
+University of Pardubice
+Czech University of Agriculture Prague
+Agricultural University of Wroclaw
+Technical University of Bialystok
+Agricultural University of Cracow
+Technical University of Kielce
+University of Pannonia
+Kossuth Lajos University
+University of Pecs
+University of Public Service
+Moscow University
+Moscow University 2
+Moscow University 3
+Moscow University 4
+Moscow University 5
+Massachusetts Institute of Technology
+Stanford University
+Harvard University
+California Institute of Technology
+University of Chicago
+Princeton University
+Columbia University
+Yale University
+University of Pennsylvania
+Johns Hopkins University
+Duke University
+Northwestern University
+Cornell University
+University of California, Berkeley
+University of California, Los Angeles
+University of Michigan
+New York University
+Carnegie Mellon University
+University of Washington
+Georgia Institute of Technology
+McGill University
+École Polytechnique de Montréal, Université de Montréal
+University of Toronto, Scarborough
+University of British Columbia
+University of Toronto, Mississauga
+University of Toronto
+Victoria University Toronto, University of Toronto
+St. Anne University
+Yukon College
+Lethbridge College
+Trinity Western University
+St. Francis Xavier University
+Australian National University
+University of Melbourne
+University of Sydney
+Batchelor Institute of Indigenous Tertiary Education
+Curtin University
+University of Western Sydney
+Edith Cowan University
+Central Queensland University
+Engineering Institute of Technology
+University of New South Wales
+La Trobe University
+Royal Melbourne Institute of Technology
+University of Auckland
+Massey University
+Victoria University of Wellington
+Lincoln University
+Christchurch Polytechnic Institute of Technology
+Paris-Sorbonne University Abu Dhabi
+Alhosn University
+Khalifa University of Science, Technology and Research
+Alain University of Science and Technology
+The Petroleum Institute
+College of Technology at Dammam
+College of Technology at Kharj
+University of Dammam
+College of Nursing and Allied Health Scinces
+Arab Open University
+Tanta University
+Zagazig University
+Modern University For Technology and Information
+Pharos International University
+CIC - Canadian International College

@@ -4,13 +4,27 @@ import type { Database } from './database.types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+// A valid Supabase anon key is a JWT (3 base64 segments separated by dots).
+// If the key is missing or not a JWT, disable background auth refresh to
+// prevent network errors when the backend is offline.
+const isValidKey = typeof supabaseAnonKey === 'string' && supabaseAnonKey.split('.').length === 3;
+
+if (!supabaseUrl || !isValidKey) {
   console.warn(
-    'Supabase credentials not found. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
+    'Supabase credentials are missing or invalid. The app will use local mock data.'
   );
 }
 
 export const supabase = createClient<Database>(
-  supabaseUrl || '',
-  supabaseAnonKey || ''
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder',
+  {
+    auth: {
+      // Disable background token refresh when credentials are invalid —
+      // prevents ERR_NAME_NOT_RESOLVED / Failed to fetch console errors.
+      autoRefreshToken: isValidKey,
+      persistSession: isValidKey,
+      detectSessionInUrl: isValidKey,
+    },
+  }
 );

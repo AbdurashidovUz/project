@@ -21,6 +21,7 @@ export interface Database {
           international_students_pct: number | null;
           programs_offered: number | null;
           website: string | null;
+          admission_url: string | null;
           tuition_min: number | null;
           tuition_max: number | null;
           created_at: string;

@@ -33,28 +33,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        loadProfile(session.user.id);
-      }
-      setLoading(false);
-    });
+    let cancelled = false;
+
+    // Timeout to ensure loading never gets stuck if Supabase is offline
+    const loadingTimeout = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 5000);
+
+    // Get initial session — wrapped in try/catch so offline errors don't hang the app
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (cancelled) return;
+        clearTimeout(loadingTimeout);
+        setUser(session?.user ?? null);
+        if (session?.user) loadProfile(session.user.id);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+        clearTimeout(loadingTimeout);
+      });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (cancelled) return;
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Try loading profile; if it doesn't exist yet, create it
-          let userProfile = await getUserProfile(session.user.id);
-          if (!userProfile) {
-            const name = session.user.user_metadata?.full_name || session.user.email || '';
-            const email = session.user.email || '';
-            userProfile = await createUserProfile(session.user.id, name, email);
+          try {
+            let userProfile = await getUserProfile(session.user.id);
+            if (!userProfile) {
+              const name = session.user.user_metadata?.full_name || session.user.email || '';
+              const email = session.user.email || '';
+              userProfile = await createUserProfile(session.user.id, name, email);
+            }
+            setProfile(userProfile);
+          } catch {
+            setProfile(null);
           }
-          setProfile(userProfile);
         } else {
           setProfile(null);
         }
@@ -62,7 +78,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      clearTimeout(loadingTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {

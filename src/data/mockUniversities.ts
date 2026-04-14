@@ -1,6 +1,28 @@
-import { University } from '../components/UniversityCard';
+export interface MockUniversity {
+  id: string;
+  name: string;
+  country: string;
+  countryFlag: string;
+  location: string;
+  description: string;
+  tuitionRange: string;
+  ieltsRequirement: number;
+  deadline: string;
+  hasScholarship: boolean;
+  image: string;
+  urgency?: 'high' | 'medium' | 'low';
+  ranking?: number;
+  acceptanceRate?: number;
+  studentPopulation?: number;
+  internationalStudentsPct?: number;
+  programsOffered?: number;
+  website?: string;
+  admissionUrl?: string;
+  tuitionMin?: number;
+  tuitionMax?: number;
+}
 
-export const mockUniversities: University[] = [
+export const mockUniversities: MockUniversity[] = [
   {
     id: '1',
     name: 'Massachusetts Institute of Technology',
@@ -10,11 +32,20 @@ export const mockUniversities: University[] = [
     description:
       'Leading institution in technology and innovation, renowned for cutting-edge research and exceptional STEM programs.',
     tuitionRange: '$55,000-$60,000',
+    tuitionMin: 55000,
+    tuitionMax: 60000,
     ieltsRequirement: 7.0,
     deadline: 'Jan 15, 2025',
     hasScholarship: true,
     image: '/images/universities/mit.png',
     urgency: 'high',
+    ranking: 1,
+    acceptanceRate: 4,
+    studentPopulation: 11934,
+    internationalStudentsPct: 33,
+    programsOffered: 160,
+    website: 'https://www.mit.edu',
+    admissionUrl: 'https://apply.mit.edu',
   },
   {
     id: '2',
@@ -25,11 +56,20 @@ export const mockUniversities: University[] = [
     description:
       'One of the oldest and most prestigious universities in the world, offering world-class education across all disciplines.',
     tuitionRange: '$30,000-$40,000',
+    tuitionMin: 30000,
+    tuitionMax: 40000,
     ieltsRequirement: 7.5,
     deadline: 'Oct 15, 2024',
     hasScholarship: true,
     image: '/images/universities/oxford.png',
     urgency: 'high',
+    ranking: 3,
+    acceptanceRate: 17,
+    studentPopulation: 26220,
+    internationalStudentsPct: 45,
+    programsOffered: 350,
+    website: 'https://www.ox.ac.uk',
+    admissionUrl: 'https://www.ox.ac.uk/admissions',
   },
   {
     id: '3',
@@ -38,13 +78,22 @@ export const mockUniversities: University[] = [
     countryFlag: '🇨🇦',
     location: 'Toronto, ON',
     description:
-      'Canada\'s top-ranked university with diverse programs and a vibrant multicultural campus environment.',
+      "Canada's top-ranked university with diverse programs and a vibrant multicultural campus environment.",
     tuitionRange: '$25,000-$35,000',
+    tuitionMin: 25000,
+    tuitionMax: 35000,
     ieltsRequirement: 6.5,
     deadline: 'Mar 1, 2025',
     hasScholarship: true,
     image: '/images/universities/toronto.png',
     urgency: 'medium',
+    ranking: 21,
+    acceptanceRate: 43,
+    studentPopulation: 97000,
+    internationalStudentsPct: 22,
+    programsOffered: 700,
+    website: 'https://www.utoronto.ca',
+    admissionUrl: 'https://future.utoronto.ca/apply',
   },
   {
     id: '4',
@@ -55,11 +104,20 @@ export const mockUniversities: University[] = [
     description:
       'Leading Australian university known for research excellence and strong industry connections.',
     tuitionRange: '$30,000-$45,000',
+    tuitionMin: 30000,
+    tuitionMax: 45000,
     ieltsRequirement: 6.5,
     deadline: 'May 31, 2025',
     hasScholarship: true,
     image: '/images/universities/melbourne.png',
     urgency: 'low',
+    ranking: 33,
+    acceptanceRate: 70,
+    studentPopulation: 52000,
+    internationalStudentsPct: 42,
+    programsOffered: 400,
+    website: 'https://www.unimelb.edu.au',
+    admissionUrl: 'https://study.unimelb.edu.au/how-to-apply',
   },
   {
     id: '5',
@@ -70,11 +128,20 @@ export const mockUniversities: University[] = [
     description:
       'Top technical university in Germany with excellent engineering and science programs, many taught in English.',
     tuitionRange: '$2,000-$5,000',
+    tuitionMin: 2000,
+    tuitionMax: 5000,
     ieltsRequirement: 6.0,
     deadline: 'Jul 15, 2025',
     hasScholarship: false,
     image: '/images/universities/tum.png',
     urgency: 'low',
+    ranking: 37,
+    acceptanceRate: 8,
+    studentPopulation: 50000,
+    internationalStudentsPct: 34,
+    programsOffered: 170,
+    website: 'https://www.tum.de/en',
+    admissionUrl: 'https://www.tum.de/en/studies/applying',
   },
   {
     id: '6',
@@ -83,13 +150,22 @@ export const mockUniversities: University[] = [
     countryFlag: '🇸🇬',
     location: 'Singapore',
     description:
-      'Asia\'s leading university with strong focus on innovation and entrepreneurship in a global city.',
+      "Asia's leading university with strong focus on innovation and entrepreneurship in a global city.",
     tuitionRange: '$20,000-$30,000',
+    tuitionMin: 20000,
+    tuitionMax: 30000,
     ieltsRequirement: 6.5,
     deadline: 'Feb 28, 2025',
     hasScholarship: true,
     image: '/images/universities/nus.png',
     urgency: 'medium',
+    ranking: 8,
+    acceptanceRate: 5,
+    studentPopulation: 40000,
+    internationalStudentsPct: 38,
+    programsOffered: 300,
+    website: 'https://www.nus.edu.sg',
+    admissionUrl: 'https://www.nus.edu.sg/admissions',
   },
   {
     id: '7',
@@ -100,11 +176,20 @@ export const mockUniversities: University[] = [
     description:
       'Historic French university with excellence in humanities, sciences, and medicine in the heart of Paris.',
     tuitionRange: '$3,000-$8,000',
+    tuitionMin: 3000,
+    tuitionMax: 8000,
     ieltsRequirement: 6.0,
     deadline: 'Apr 30, 2025',
     hasScholarship: true,
     image: '/images/universities/sorbonne.png',
     urgency: 'medium',
+    ranking: 59,
+    acceptanceRate: 25,
+    studentPopulation: 55000,
+    internationalStudentsPct: 23,
+    programsOffered: 350,
+    website: 'https://www.sorbonne-universite.fr/en',
+    admissionUrl: 'https://www.sorbonne-universite.fr/en/international-students',
   },
   {
     id: '8',
@@ -115,11 +200,20 @@ export const mockUniversities: University[] = [
     description:
       'International research university with a broad range of English-taught programs in a vibrant European city.',
     tuitionRange: '$10,000-$20,000',
+    tuitionMin: 10000,
+    tuitionMax: 20000,
     ieltsRequirement: 6.5,
     deadline: 'May 1, 2025',
     hasScholarship: true,
-    image: 'https://images.unsplash.com/photo-1509439581779-6298f75bf6e5?w=400&h=400&fit=crop',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Universiteit_van_Amsterdam_-_Oudemanhuispoort_3.jpg/800px-Universiteit_van_Amsterdam_-_Oudemanhuispoort_3.jpg',
     urgency: 'medium',
+    ranking: 53,
+    acceptanceRate: 33,
+    studentPopulation: 39000,
+    internationalStudentsPct: 30,
+    programsOffered: 200,
+    website: 'https://www.uva.nl/en',
+    admissionUrl: 'https://www.uva.nl/en/education/other-programmes/application-and-admission',
   },
   {
     id: '9',
@@ -130,11 +224,20 @@ export const mockUniversities: University[] = [
     description:
       'World-renowned for science and technology, consistently ranked among the top universities globally.',
     tuitionRange: '$1,500-$2,000',
+    tuitionMin: 1500,
+    tuitionMax: 2000,
     ieltsRequirement: 7.0,
     deadline: 'Dec 15, 2024',
     hasScholarship: false,
-    image: 'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=400&h=400&fit=crop',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/ETH-Hauptgebaeude-01.jpg/800px-ETH-Hauptgebaeude-01.jpg',
     urgency: 'high',
+    ranking: 7,
+    acceptanceRate: 27,
+    studentPopulation: 21026,
+    internationalStudentsPct: 40,
+    programsOffered: 170,
+    website: 'https://ethz.ch/en',
+    admissionUrl: 'https://ethz.ch/en/studies/registration-application.html',
   },
   {
     id: '10',
@@ -145,11 +248,20 @@ export const mockUniversities: University[] = [
     description:
       'Beautiful campus with outstanding research facilities and diverse academic programs in a stunning location.',
     tuitionRange: '$25,000-$35,000',
+    tuitionMin: 25000,
+    tuitionMax: 35000,
     ieltsRequirement: 6.5,
     deadline: 'Jan 15, 2025',
     hasScholarship: true,
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Irving_K_Barber_Learning_Centre.jpg/800px-Irving_K_Barber_Learning_Centre.jpg',
     urgency: 'high',
+    ranking: 38,
+    acceptanceRate: 52,
+    studentPopulation: 68000,
+    internationalStudentsPct: 29,
+    programsOffered: 500,
+    website: 'https://www.ubc.ca',
+    admissionUrl: 'https://you.ubc.ca/applying-ubc',
   },
   {
     id: '11',
@@ -158,13 +270,22 @@ export const mockUniversities: University[] = [
     countryFlag: '🇬🇧',
     location: 'London',
     description:
-      'London\'s leading multidisciplinary university with a global reputation for teaching and research excellence.',
+      "London's leading multidisciplinary university with a global reputation for teaching and research excellence.",
     tuitionRange: '$25,000-$40,000',
+    tuitionMin: 25000,
+    tuitionMax: 40000,
     ieltsRequirement: 6.5,
     deadline: 'Jan 31, 2025',
     hasScholarship: true,
-    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=400&fit=crop',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Ucl_main_building_2.jpg/800px-Ucl_main_building_2.jpg',
     urgency: 'high',
+    ranking: 9,
+    acceptanceRate: 63,
+    studentPopulation: 42000,
+    internationalStudentsPct: 52,
+    programsOffered: 450,
+    website: 'https://www.ucl.ac.uk',
+    admissionUrl: 'https://www.ucl.ac.uk/prospective-students/graduate/applying-ucl',
   },
   {
     id: '12',
@@ -173,13 +294,22 @@ export const mockUniversities: University[] = [
     countryFlag: '🇦🇺',
     location: 'Canberra, ACT',
     description:
-      'Australia\'s national university located in the capital, known for research and policy influence.',
+      "Australia's national university located in the capital, known for research and policy influence.",
     tuitionRange: '$35,000-$45,000',
+    tuitionMin: 35000,
+    tuitionMax: 45000,
     ieltsRequirement: 6.5,
     deadline: 'Dec 31, 2024',
     hasScholarship: true,
-    image: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Australian_National_University_library_2.jpg/800px-Australian_National_University_library_2.jpg',
     urgency: 'high',
+    ranking: 30,
+    acceptanceRate: 35,
+    studentPopulation: 22000,
+    internationalStudentsPct: 45,
+    programsOffered: 280,
+    website: 'https://www.anu.edu.au',
+    admissionUrl: 'https://www.anu.edu.au/study/apply',
   },
   {
     id: '13',
@@ -188,13 +318,22 @@ export const mockUniversities: University[] = [
     countryFlag: '🇨🇦',
     location: 'Montreal, QC',
     description:
-      'Canada\'s most international university with a rich history and strong academic reputation.',
+      "Canada's most international university with a rich history and strong academic reputation.",
     tuitionRange: '$20,000-$30,000',
+    tuitionMin: 20000,
+    tuitionMax: 30000,
     ieltsRequirement: 6.5,
     deadline: 'Jan 15, 2025',
     hasScholarship: true,
-    image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=400&fit=crop',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Arts_Building%2C_McGill_University.jpg/800px-Arts_Building%2C_McGill_University.jpg',
     urgency: 'high',
+    ranking: 46,
+    acceptanceRate: 46,
+    studentPopulation: 40000,
+    internationalStudentsPct: 30,
+    programsOffered: 300,
+    website: 'https://www.mcgill.ca',
+    admissionUrl: 'https://www.mcgill.ca/applying',
   },
   {
     id: '14',
@@ -203,13 +342,22 @@ export const mockUniversities: University[] = [
     countryFlag: '🇦🇺',
     location: 'Sydney, NSW',
     description:
-      'Australia\'s first university with a beautiful campus and comprehensive range of study options.',
+      "Australia's first university with a beautiful campus and comprehensive range of study options.",
     tuitionRange: '$30,000-$45,000',
+    tuitionMin: 30000,
+    tuitionMax: 45000,
     ieltsRequirement: 6.5,
     deadline: 'Jan 31, 2025',
     hasScholarship: false,
-    image: 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=400&h=400&fit=crop',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/The_Quadrangle_-_University_of_Sydney.jpg/800px-The_Quadrangle_-_University_of_Sydney.jpg',
     urgency: 'high',
+    ranking: 19,
+    acceptanceRate: 30,
+    studentPopulation: 71000,
+    internationalStudentsPct: 38,
+    programsOffered: 400,
+    website: 'https://www.sydney.edu.au',
+    admissionUrl: 'https://www.sydney.edu.au/study/how-to-apply.html',
   },
   {
     id: '15',
@@ -218,12 +366,21 @@ export const mockUniversities: University[] = [
     countryFlag: '🇩🇪',
     location: 'Munich',
     description:
-      'One of Germany\'s oldest universities with strong programs in humanities and natural sciences.',
+      "One of Germany's oldest universities with strong programs in humanities and natural sciences.",
     tuitionRange: '$0-$3,000',
+    tuitionMin: 0,
+    tuitionMax: 3000,
     ieltsRequirement: 6.0,
     deadline: 'Jul 15, 2025',
     hasScholarship: true,
-    image: 'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=400&h=400&fit=crop',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Universit%C3%A4t_M%C3%BCnchen.jpg/800px-Universit%C3%A4t_M%C3%BCnchen.jpg',
     urgency: 'low',
+    ranking: 59,
+    acceptanceRate: 15,
+    studentPopulation: 52000,
+    internationalStudentsPct: 20,
+    programsOffered: 300,
+    website: 'https://www.lmu.de/en',
+    admissionUrl: 'https://www.lmu.de/en/study/international-applicants',
   },
 ];

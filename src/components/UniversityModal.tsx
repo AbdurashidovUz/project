@@ -1,6 +1,7 @@
-import { X, MapPin, Globe, DollarSign, Calendar, Award, BookOpen, GraduationCap } from 'lucide-react';
+import { X, MapPin, Globe, DollarSign, Calendar, Award, BookOpen, GraduationCap, ExternalLink, Users, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import type { University } from '../lib/database.types';
+import { universityImages } from '../data/universityImages';
 
 interface UniversityModalProps {
   university: University | null;
@@ -55,6 +56,23 @@ export default function UniversityModal({
     { id: 'deadlines', label: 'Deadlines', icon: Calendar },
   ];
 
+  const fallbackImages = [
+    'https://images.unsplash.com/photo-1509439581779-6298f75bf6e5?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=400&fit=crop'
+  ];
+  const nameHash = university.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const fallbackGraphic = fallbackImages[nameHash % fallbackImages.length];
+  
+  // Try local user folder -> then Wikipedia auto-match -> then beautiful fallback
+  const imageUrl = `/images/universities/${university.name}.jpg`;
+  const backupUrl = universityImages[university.name] || fallbackGraphic;
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
@@ -79,12 +97,15 @@ export default function UniversityModal({
               <div className="flex items-end space-x-6 -mt-12">
                 <div className="w-32 h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-white flex-shrink-0">
                   <img
-                    src={university.image_url}
+                    src={imageUrl}
                     alt={university.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src =
-                        'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+                      if (e.currentTarget.src !== (!e.currentTarget.src.includes('unsplash') ? backupUrl : '')) {
+                        e.currentTarget.src = backupUrl;
+                      } else {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop';
+                      }
                     }}
                   />
                 </div>
@@ -144,10 +165,22 @@ export default function UniversityModal({
 
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">Quick Facts</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                      <div className="flex items-center gap-2 text-sm text-blue-600 mb-1">
+                        <TrendingUp size={14} />
+                        World Ranking
+                      </div>
+                      <div className="text-lg font-bold text-gray-800">
+                        {university.ranking ? `# ${university.ranking}` : 'N/A'}
+                      </div>
+                    </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
-                      <div className="text-sm text-gray-600 mb-1">Student Population</div>
-                      <div className="text-lg font-semibold text-gray-800">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                        <Users size={14} />
+                        Student Population
+                      </div>
+                      <div className="text-lg font-bold text-gray-800">
                         {university.student_population
                           ? university.student_population.toLocaleString()
                           : 'N/A'}
@@ -155,7 +188,7 @@ export default function UniversityModal({
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-600 mb-1">International Students</div>
-                      <div className="text-lg font-semibold text-gray-800">
+                      <div className="text-lg font-bold text-gray-800">
                         {university.international_students_pct
                           ? `${university.international_students_pct}%`
                           : 'N/A'}
@@ -163,14 +196,20 @@ export default function UniversityModal({
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-600 mb-1">Programs Offered</div>
-                      <div className="text-lg font-semibold text-gray-800">
+                      <div className="text-lg font-bold text-gray-800">
                         {university.programs_offered ? `${university.programs_offered}+` : 'N/A'}
                       </div>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-600 mb-1">Acceptance Rate</div>
-                      <div className="text-lg font-semibold text-gray-800">
+                      <div className="text-lg font-bold text-gray-800">
                         {university.acceptance_rate ? `${university.acceptance_rate}%` : 'N/A'}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                      <div className="text-sm text-green-600 mb-1">IELTS Required</div>
+                      <div className="text-lg font-bold text-gray-800">
+                        {university.ielts_requirement}+
                       </div>
                     </div>
                   </div>
@@ -273,6 +312,27 @@ export default function UniversityModal({
                       <li className="flex items-start"><span className="mr-2">•</span><span>Valid Passport Copy</span></li>
                     </ul>
                   </div>
+                  {/* Admission Portal Link */}
+                  {university.admission_url && (
+                    <div className="p-5 bg-gradient-to-br from-blue-600 to-teal-600 rounded-xl text-white">
+                      <div className="flex items-center gap-3 mb-3">
+                        <ExternalLink size={22} />
+                        <h4 className="font-semibold text-lg">Ready to Apply?</h4>
+                      </div>
+                      <p className="text-blue-100 text-sm mb-4">
+                        Start your application directly on the official university admission portal.
+                      </p>
+                      <a
+                        href={university.admission_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-50 transition-colors"
+                      >
+                        <ExternalLink size={16} />
+                        Apply Now — Official Portal
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -360,13 +420,25 @@ export default function UniversityModal({
               Close
             </button>
             <div className="flex items-center space-x-3">
+              {university.admission_url && (
+                <a
+                  href={university.admission_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <ExternalLink size={16} />
+                  Apply Now
+                </a>
+              )}
               {university.website && (
                 <a
                   href={university.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-primary"
+                  className="btn-ghost flex items-center gap-2"
                 >
+                  <Globe size={16} />
                   Visit Website
                 </a>
               )}

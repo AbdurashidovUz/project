@@ -58,7 +58,7 @@ export default function ProgramCard({
                         alt={program.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop';
                         }}
                     />
                 </div>

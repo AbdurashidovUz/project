@@ -1,5 +1,6 @@
 import { Heart, MapPin, Calendar, DollarSign, Award, ArrowLeftRight } from 'lucide-react';
 import type { University } from '../lib/database.types';
+import { universityImages } from '../data/universityImages';
 
 interface UniversityCardProps {
   university: University;
@@ -43,17 +44,37 @@ export default function UniversityCard({
     }
   };
 
+  const fallbackImages = [
+    'https://images.unsplash.com/photo-1509439581779-6298f75bf6e5?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=400&fit=crop'
+  ];
+  const nameHash = university.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const fallbackGraphic = fallbackImages[nameHash % fallbackImages.length];
+  
+  // Try local user folder -> then Wikipedia auto-match -> then beautiful fallback
+  const imageUrl = `/images/universities/${university.name}.jpg`;
+  const backupUrl = universityImages[university.name] || fallbackGraphic;
+
   return (
     <div className="card group cursor-pointer" onClick={() => onViewDetails(university)}>
       <div className="relative">
         <div className="h-48 bg-gradient-to-br from-blue-50 to-teal-50 overflow-hidden">
           <img
-            src={university.image_url}
+            src={imageUrl}
             alt={university.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
-              e.currentTarget.src =
-                'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=400&fit=crop';
+              if (e.currentTarget.src !== backupUrl) {
+                e.currentTarget.src = backupUrl;
+              } else {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=400&fit=crop';
+              }
             }}
           />
         </div>

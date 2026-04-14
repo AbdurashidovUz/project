@@ -12,7 +12,7 @@ import Chatbot from './components/Chatbot';
 import Footer from './components/Footer';
 import { useAuth } from './contexts/AuthContext';
 import { fetchUniversities, fetchPrograms, getSavedUniversities, saveUniversity, unsaveUniversity } from './lib/api';
-import { mockUniversities } from './data/mockUniversities';
+import { mockUniversities, type MockUniversity } from './data/mockUniversities';
 import { mockPrograms, Program } from './data/mockPrograms';
 import type { University } from './lib/database.types';
 
@@ -26,7 +26,7 @@ interface FilterState {
 }
 
 // Adapter: convert mock university to database type
-function adaptMockUniversity(mock: typeof mockUniversities[0]): University {
+function adaptMockUniversity(mock: MockUniversity): University {
   return {
     id: mock.id,
     name: mock.name,
@@ -40,14 +40,15 @@ function adaptMockUniversity(mock: typeof mockUniversities[0]): University {
     has_scholarship: mock.hasScholarship,
     image_url: mock.image,
     urgency: mock.urgency || null,
-    ranking: null,
-    acceptance_rate: null,
-    student_population: null,
-    international_students_pct: null,
-    programs_offered: null,
-    website: null,
-    tuition_min: null,
-    tuition_max: null,
+    ranking: mock.ranking ?? null,
+    acceptance_rate: mock.acceptanceRate ?? null,
+    student_population: mock.studentPopulation ?? null,
+    international_students_pct: mock.internationalStudentsPct ?? null,
+    programs_offered: mock.programsOffered ?? null,
+    website: mock.website ?? null,
+    admission_url: mock.admissionUrl ?? null,
+    tuition_min: mock.tuitionMin ?? null,
+    tuition_max: mock.tuitionMax ?? null,
     created_at: new Date().toISOString(),
   };
 }
@@ -72,6 +73,8 @@ function App() {
     programLevel: [],
     deadline: { start: '', end: '' },
   });
+
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
 
   // Load universities from Supabase (or fall back to mock data)
   const loadUniversities = useCallback(async () => {
@@ -170,12 +173,21 @@ function App() {
     }
   }, [programSearchQuery]);
 
-  // Load saved universities for logged-in user
+  // Load saved universities for logged-in user or from localStorage if offline/guest
   const loadSavedUniversities = useCallback(async () => {
     if (user) {
       const saved = await getSavedUniversities(user.id);
       setSavedUniversityIds(new Set(saved));
     } else {
+      try {
+        const localSaved = localStorage.getItem('saved_universities');
+        if (localSaved) {
+          setSavedUniversityIds(new Set(JSON.parse(localSaved)));
+          return;
+        }
+      } catch (e) {
+        console.warn('Could not load saved universities from local storage');
+      }
       setSavedUniversityIds(new Set());
     }
   }, [user]);
@@ -200,6 +212,14 @@ function App() {
     }
   };
 
+  const handleShowSaved = () => {
+    setShowSavedOnly(true);
+    const universitiesSection = document.getElementById('universities');
+    if (universitiesSection) {
+      universitiesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const handleViewDetails = (university: University) => {
     setSelectedUniversity(university);
   };
@@ -218,7 +238,7 @@ function App() {
 
   const handleToggleSave = async (universityId: string) => {
     if (!user) {
-      // Could show auth modal here, but for now just toggle locally
+      // Offline/Guest fallback: save to localStorage
       setSavedUniversityIds((prev) => {
         const newSet = new Set(prev);
         if (newSet.has(universityId)) {
@@ -226,6 +246,7 @@ function App() {
         } else {
           newSet.add(universityId);
         }
+        localStorage.setItem('saved_universities', JSON.stringify(Array.from(newSet)));
         return newSet;
       });
       return;
@@ -263,9 +284,13 @@ function App() {
     setCompareList([]);
   };
 
+  const displayedUniversities = showSavedOnly
+    ? universities.filter((u) => savedUniversityIds.has(u.id))
+    : universities;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header onShowSaved={handleShowSaved} />
 
       <main>
         <Hero onSearch={handleSearch} />
@@ -281,7 +306,7 @@ function App() {
               />
 
               <UniversityGrid
-                universities={universities}
+                universities={displayedUniversities}
                 onViewDetails={handleViewDetails}
                 onToggleFilters={() => setIsFilterOpen(!isFilterOpen)}
                 savedUniversities={savedUniversityIds}
@@ -289,6 +314,8 @@ function App() {
                 compareList={compareList}
                 onToggleCompare={handleToggleCompare}
                 loading={loading}
+                isShowingSavedOnly={showSavedOnly}
+                onClearSavedFilter={() => setShowSavedOnly(false)}
               />
             </div>
           </div>

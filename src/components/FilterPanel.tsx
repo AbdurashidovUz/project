@@ -52,10 +52,10 @@ export default function FilterPanel({
     }));
   };
 
-  const handleCountryToggle = (countryCode: string) => {
-    const newCountries = filters.countries.includes(countryCode)
-      ? filters.countries.filter((c) => c !== countryCode)
-      : [...filters.countries, countryCode];
+  const handleCountryToggle = (countryName: string) => {
+    const newCountries = filters.countries.includes(countryName)
+      ? filters.countries.filter((c) => c !== countryName)
+      : [...filters.countries, countryName];
     onFilterChange({ ...filters, countries: newCountries });
   };
 
@@ -115,8 +115,8 @@ export default function FilterPanel({
                 >
                   <input
                     type="checkbox"
-                    checked={filters.countries.includes(country.code)}
-                    onChange={() => handleCountryToggle(country.code)}
+                    checked={filters.countries.includes(country.name)}
+                    onChange={() => handleCountryToggle(country.name)}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span className="text-xl">{country.flag}</span>

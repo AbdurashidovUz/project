@@ -12,6 +12,8 @@ interface UniversityGridProps {
   compareList: string[];
   onToggleCompare: (id: string) => void;
   loading?: boolean;
+  isShowingSavedOnly?: boolean;
+  onClearSavedFilter?: () => void;
 }
 
 export default function UniversityGrid({
@@ -23,6 +25,8 @@ export default function UniversityGrid({
   compareList,
   onToggleCompare,
   loading = false,
+  isShowingSavedOnly = false,
+  onClearSavedFilter,
 }: UniversityGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('relevance');
@@ -57,6 +61,14 @@ export default function UniversityGrid({
           <div className="text-6xl mb-4">🔍</div>
           <h3 className="text-2xl font-semibold text-gray-800 mb-2">No universities found</h3>
           <p className="text-gray-600">Try adjusting your filters or search criteria</p>
+          {isShowingSavedOnly && (
+            <button
+              onClick={onClearSavedFilter}
+              className="mt-4 px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-lg hover:bg-blue-200 transition-colors"
+            >
+              Clear Saved Filter
+            </button>
+          )}
         </div>
       </div>
     );
@@ -67,12 +79,22 @@ export default function UniversityGrid({
       <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 mb-1">
-            {universities.length} Universities Found
+            {isShowingSavedOnly ? 'Saved Universities' : `${universities.length} Universities Found`}
           </h2>
-          <p className="text-sm text-gray-600">
-            Showing {startIndex + 1}-{Math.min(endIndex, universities.length)} of{' '}
-            {universities.length}
-          </p>
+          <div className="flex items-center gap-3 text-sm text-gray-600">
+            <span>
+              Showing {universities.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, universities.length)} of{' '}
+              {universities.length}
+            </span>
+            {isShowingSavedOnly && (
+              <button
+                onClick={onClearSavedFilter}
+                className="text-blue-600 hover:text-blue-800 underline font-medium"
+              >
+                Clear filter
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">

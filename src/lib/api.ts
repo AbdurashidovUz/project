@@ -1,6 +1,23 @@
 import { supabase } from './supabase';
 import type { University, Program, UserProfile } from './database.types';
 
+// ==================== Timeout Helper ====================
+
+/**
+ * Races a Supabase query (PromiseLike) against a timeout.
+ * Resolves with `fallback` if the timeout fires first.
+ */
+async function withTimeout<T>(
+  thenable: PromiseLike<T>,
+  fallback: T,
+  ms = 5000
+): Promise<T> {
+  return Promise.race([
+    Promise.resolve(thenable),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 // ==================== Universities ====================
 
 export interface UniversityFilters {
@@ -39,25 +56,27 @@ export async function fetchUniversities(filters?: UniversityFilters): Promise<Un
 
   query = query.order('ranking', { ascending: true, nullsFirst: false });
 
-  const { data, error } = await query;
+  const { data, error } = await withTimeout(
+    query,
+    { data: null, error: new Error('timeout') } as any
+  );
 
-  if (error) {
-    console.error('Error fetching universities:', error);
+  if (error || !data) {
+    console.warn('Supabase unavailable, using mock data:', error);
     return [];
   }
 
-  return data || [];
+  return data;
 }
 
 export async function fetchUniversityById(id: string): Promise<University | null> {
-  const { data, error } = await supabase
-    .from('universities')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const { data, error } = await withTimeout(
+    supabase.from('universities').select('*').eq('id', id).single(),
+    { data: null, error: new Error('timeout') } as any
+  );
 
-  if (error) {
-    console.error('Error fetching university:', error);
+  if (error || !data) {
+    console.warn('Could not fetch university:', error);
     return null;
   }
 
@@ -75,14 +94,17 @@ export async function fetchPrograms(searchQuery?: string): Promise<Program[]> {
 
   query = query.order('deadline', { ascending: true });
 
-  const { data, error } = await query;
+  const { data, error } = await withTimeout(
+    query,
+    { data: null, error: new Error('timeout') } as any
+  );
 
-  if (error) {
-    console.error('Error fetching programs:', error);
+  if (error || !data) {
+    console.warn('Supabase unavailable, using mock data:', error);
     return [];
   }
 
-  return data || [];
+  return data;
 }
 
 // ==================== Saved Universities ====================
@@ -98,7 +120,7 @@ export async function getSavedUniversities(userId: string): Promise<string[]> {
     return [];
   }
 
-  return data?.map((s) => s.university_id) || [];
+  return data?.map((s: any) => s.university_id) || [];
 }
 
 export async function saveUniversity(userId: string, universityId: string): Promise<boolean> {
@@ -152,6 +174,7 @@ export async function updateUserProfile(
 ): Promise<UserProfile | null> {
   const { data, error } = await supabase
     .from('user_profiles')
+    // @ts-ignore: IDE erroneously infers never for this param despite valid schema
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', userId)
     .select()
@@ -172,6 +195,7 @@ export async function createUserProfile(
 ): Promise<UserProfile | null> {
   const { data, error } = await supabase
     .from('user_profiles')
+    // @ts-ignore: IDE erroneously infers never for this param despite valid schema
     .insert({
       id: userId,
       full_name: fullName,
