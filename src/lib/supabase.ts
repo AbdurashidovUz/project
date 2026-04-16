@@ -7,7 +7,10 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // A valid Supabase anon key is a JWT (3 base64 segments separated by dots).
 // If the key is missing or not a JWT, disable background auth refresh to
 // prevent network errors when the backend is offline.
-const isValidKey = typeof supabaseAnonKey === 'string' && supabaseAnonKey.split('.').length === 3;
+const isValidKey = typeof supabaseAnonKey === 'string' && (
+  supabaseAnonKey.split('.').length === 3 || 
+  supabaseAnonKey.startsWith('sb_publishable_')
+);
 
 if (!supabaseUrl || !isValidKey) {
   console.warn(
