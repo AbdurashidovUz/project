@@ -5,9 +5,10 @@ import AuthModal from './AuthModal';
 
 interface HeaderProps {
   onShowSaved?: () => void;
+  onHomeClick?: () => void;
 }
 
-export default function Header({ onShowSaved }: HeaderProps) {
+export default function Header({ onShowSaved, onHomeClick }: HeaderProps) {
   const { user, profile, signOut, loading } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -73,6 +74,12 @@ export default function Header({ onShowSaved }: HeaderProps) {
             <nav className="hidden md:flex items-center space-x-8">
               <a
                 href="#home"
+                onClick={(e) => {
+                  if (onHomeClick) {
+                    e.preventDefault();
+                    onHomeClick();
+                  }
+                }}
                 className={`font-medium transition-colors duration-200 hover:text-blue-600 ${
                   isScrolled ? 'text-gray-700' : 'text-white hover:text-blue-200'
                 }`}
@@ -197,7 +204,13 @@ export default function Header({ onShowSaved }: HeaderProps) {
               <a
                 href="#home"
                 className="block text-gray-700 font-medium hover:text-blue-600 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => {
+                  if (onHomeClick) {
+                    e.preventDefault();
+                    onHomeClick();
+                  }
+                  setIsMobileMenuOpen(false);
+                }}
               >
                 Home
               </a>

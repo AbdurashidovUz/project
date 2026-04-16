@@ -284,13 +284,28 @@ function App() {
     setCompareList([]);
   };
 
+  const handleHomeClick = () => {
+    setSearchQuery('');
+    setFilters({
+      countries: [],
+      tuitionRange: [0, 100000],
+      ieltsScore: 0,
+      hasScholarship: false,
+      programLevel: [],
+      deadline: { start: '', end: '' },
+    });
+    setShowSavedOnly(false);
+    setProgramSearchQuery('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const displayedUniversities = showSavedOnly
     ? universities.filter((u) => savedUniversityIds.has(u.id))
     : universities;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onShowSaved={handleShowSaved} />
+      <Header onShowSaved={handleShowSaved} onHomeClick={handleHomeClick} />
 
       <main>
         <Hero onSearch={handleSearch} />
