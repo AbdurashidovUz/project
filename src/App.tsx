@@ -13,6 +13,7 @@ import Footer from './components/Footer';
 import { useAuth } from './contexts/AuthContext';
 import { fetchUniversities, fetchPrograms, getSavedUniversities, saveUniversity, unsaveUniversity } from './lib/api';
 import { mockUniversities, type MockUniversity } from './data/mockUniversities';
+import { allUniversities } from './data/allUniversities';
 import { mockPrograms, Program } from './data/mockPrograms';
 import type { University } from './lib/database.types';
 
@@ -91,8 +92,8 @@ function App() {
       if (data.length > 0) {
         setUniversities(data);
       } else {
-        // Fallback to mock data with client-side filtering
-        let filtered = mockUniversities.map(adaptMockUniversity);
+        // Fallback to full 146-university local dataset (from Hipolabs API via sql-to-ts)
+        let filtered = [...allUniversities];
 
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
@@ -100,7 +101,7 @@ function App() {
             (u) =>
               u.name.toLowerCase().includes(q) ||
               u.country.toLowerCase().includes(q) ||
-              u.location.toLowerCase().includes(q)
+              (u.location ?? '').toLowerCase().includes(q)
           );
         }
 
@@ -113,14 +114,21 @@ function App() {
         }
 
         if (filters.ieltsScore > 0) {
-          filtered = filtered.filter((u) => u.ielts_requirement <= filters.ieltsScore);
+          filtered = filtered.filter((u) => (u.ielts_requirement ?? 99) <= filters.ieltsScore);
+        }
+
+        if (filters.tuitionRange[0] > 0 || filters.tuitionRange[1] < 100000) {
+          filtered = filtered.filter((u) =>
+            (u.tuition_min ?? 0) >= filters.tuitionRange[0] &&
+            (u.tuition_max ?? 0) <= filters.tuitionRange[1]
+          );
         }
 
         setUniversities(filtered);
       }
     } catch (error) {
       console.error('Error loading universities:', error);
-      setUniversities(mockUniversities.map(adaptMockUniversity));
+      setUniversities(allUniversities);
     }
     setLoading(false);
   }, [searchQuery, filters]);

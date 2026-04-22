@@ -22,11 +22,8 @@ export default function UniversityModal({
 
   if (!isOpen || !university) return null;
 
-  // Generate a fallback search URL if no website is stored
-  const websiteUrl = university.website ||
-    `https://www.google.com/search?q=${encodeURIComponent(university.name + ' official website')}`;
-  const admissionUrl = university.admission_url ||
-    `https://www.google.com/search?q=${encodeURIComponent(university.name + ' admission apply')}`;
+  const websiteUrl = university.website || '#';
+  const admissionUrl = university.admission_url || university.website || '#';
 
   const getRecommendationBadge = () => {
     switch (aiRecommendation) {

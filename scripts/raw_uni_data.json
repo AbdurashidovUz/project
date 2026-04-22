@@ -1,0 +1,93 @@
+﻿{
+    "United States":  {
+                          "unis":  [
+
+                                   ],
+                          "flag":  "🇺🇸",
+                          "take":  20
+                      },
+    "United Kingdom":  {
+                           "unis":  [
+
+                                    ],
+                           "flag":  "🇬🇧",
+                           "take":  15
+                       },
+    "Canada":  {
+                   "unis":  [
+
+                            ],
+                   "flag":  "🇨🇦",
+                   "take":  12
+               },
+    "South Korea":  {
+                        "unis":  [
+
+                                 ],
+                        "flag":  "🇰🇷",
+                        "take":  10
+                    },
+    "Netherlands":  {
+                        "unis":  [
+
+                                 ],
+                        "flag":  "🇳🇱",
+                        "take":  8
+                    },
+    "France":  {
+                   "unis":  [
+
+                            ],
+                   "flag":  "🇫🇷",
+                   "take":  8
+               },
+    "Singapore":  {
+                      "unis":  [
+
+                               ],
+                      "flag":  "🇸🇬",
+                      "take":  6
+                  },
+    "Japan":  {
+                  "unis":  [
+
+                           ],
+                  "flag":  "🇯🇵",
+                  "take":  12
+              },
+    "Turkey":  {
+                   "unis":  [
+
+                            ],
+                   "flag":  "🇹🇷",
+                   "take":  15
+               },
+    "Switzerland":  {
+                        "unis":  [
+
+                                 ],
+                        "flag":  "🇨🇭",
+                        "take":  6
+                    },
+    "Germany":  {
+                    "unis":  [
+
+                             ],
+                    "flag":  "🇩🇪",
+                    "take":  12
+                },
+    "Australia":  {
+                      "unis":  [
+
+                               ],
+                      "flag":  "🇦🇺",
+                      "take":  12
+                  },
+    "Malaysia":  {
+                     "unis":  [
+
+                              ],
+                     "flag":  "🇲🇾",
+                     "take":  8
+                 }
+}
