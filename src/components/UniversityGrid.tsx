@@ -16,6 +16,33 @@ interface UniversityGridProps {
   onClearSavedFilter?: () => void;
 }
 
+type SortOption = 'ranking' | 'tuition-low' | 'tuition-high' | 'deadline';
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'ranking',      label: '🏆 Ranking' },
+  { value: 'tuition-low',  label: '💰 Tuition ↑' },
+  { value: 'tuition-high', label: '💰 Tuition ↓' },
+  { value: 'deadline',     label: '📅 Deadline' },
+];
+
+function sortUniversities(list: University[], sortBy: SortOption): University[] {
+  const copy = [...list];
+  switch (sortBy) {
+    case 'ranking':
+      return copy.sort((a, b) => (a.ranking ?? 9999) - (b.ranking ?? 9999));
+    case 'tuition-low':
+      return copy.sort((a, b) => (a.tuition_min ?? 0) - (b.tuition_min ?? 0));
+    case 'tuition-high':
+      return copy.sort((a, b) => (b.tuition_max ?? 0) - (a.tuition_max ?? 0));
+    case 'deadline':
+      return copy.sort((a, b) =>
+        new Date(a.deadline ?? '9999').getTime() - new Date(b.deadline ?? '9999').getTime()
+      );
+    default:
+      return copy;
+  }
+}
+
 export default function UniversityGrid({
   universities,
   onViewDetails,
@@ -29,17 +56,24 @@ export default function UniversityGrid({
   onClearSavedFilter,
 }: UniversityGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState('relevance');
+  const [sortBy, setSortBy] = useState<SortOption>('ranking');
+
+  const sorted = sortUniversities(universities, sortBy);
 
   const itemsPerPage = 9;
-  const totalPages = Math.ceil(universities.length / itemsPerPage);
+  const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentUniversities = universities.slice(startIndex, endIndex);
+  const currentUniversities = sorted.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 400, behavior: 'smooth' });
+  };
+
+  const handleSortChange = (option: SortOption) => {
+    setSortBy(option);
+    setCurrentPage(1);
   };
 
   if (loading) {
@@ -76,59 +110,65 @@ export default function UniversityGrid({
 
   return (
     <div className="flex-1 p-4 md:p-8">
-      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-1">
-            {isShowingSavedOnly ? 'Saved Universities' : `${universities.length} Universities Found`}
-          </h2>
-          <div className="flex items-center gap-3 text-sm text-gray-600">
-            <span>
-              Showing {universities.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, universities.length)} of{' '}
-              {universities.length}
-            </span>
-            {isShowingSavedOnly && (
-              <button
-                onClick={onClearSavedFilter}
-                className="text-blue-600 hover:text-blue-800 underline font-medium"
-              >
-                Clear filter
-              </button>
-            )}
+      {/* Header */}
+      <div className="mb-6 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-1">
+              {isShowingSavedOnly ? 'Saved Universities' : `${universities.length} Universities Found`}
+            </h2>
+            <div className="flex items-center gap-3 text-sm text-gray-600">
+              <span>
+                Showing {sorted.length > 0 ? startIndex + 1 : 0}–{Math.min(endIndex, sorted.length)} of{' '}
+                {sorted.length}
+              </span>
+              {isShowingSavedOnly && (
+                <button
+                  onClick={onClearSavedFilter}
+                  className="text-blue-600 hover:text-blue-800 underline font-medium"
+                >
+                  Clear filter
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {/* Mobile filter toggle */}
           <button
             onClick={onToggleFilters}
-            className="md:hidden btn-ghost flex items-center space-x-2 flex-1 sm:flex-none"
+            className="md:hidden btn-ghost flex items-center space-x-2"
           >
             <Filter size={18} />
             <span>Filters</span>
           </button>
+        </div>
 
-          <div className="flex items-center space-x-2 flex-1 sm:flex-none">
-            <label htmlFor="sort" className="text-sm text-gray-600 whitespace-nowrap">
-              Sort by:
-            </label>
-            <select
-              id="sort"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="input-field py-2 text-sm"
+        {/* Sort pill buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest mr-1">
+            Sort by
+          </span>
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => handleSortChange(opt.value)}
+              className={[
+                'px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 select-none',
+                sortBy === opt.value
+                  ? 'bg-blue-600 text-white border-blue-600 shadow shadow-blue-200 scale-105'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50',
+              ].join(' ')}
             >
-              <option value="relevance">Relevance</option>
-              <option value="tuition-low">Tuition (Low to High)</option>
-              <option value="tuition-high">Tuition (High to Low)</option>
-              <option value="deadline">Application Deadline</option>
-              <option value="ranking">Ranking</option>
-            </select>
-          </div>
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {compareList.length > 0 && (
         <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-700">
-          <span className="font-semibold">{compareList.length}/3</span> universities selected for comparison.{' '}
+          <span className="font-semibold">{compareList.length}/3</span> universities selected for
+          comparison.{' '}
           <a href="#compare" className="underline font-semibold hover:text-purple-800">
             View comparison →
           </a>

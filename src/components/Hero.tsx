@@ -1,6 +1,6 @@
 import { Search } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { mockUniversities } from '../data/mockUniversities';
+import { allUniversities } from '../data/allUniversities';
 
 interface HeroProps {
   onSearch: (query: string) => void;
@@ -9,7 +9,7 @@ interface HeroProps {
 export default function Hero({ onSearch }: HeroProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState<typeof mockUniversities>([]);
+  const [suggestions, setSuggestions] = useState<typeof allUniversities>([]);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,13 +24,14 @@ export default function Hero({ onSearch }: HeroProps) {
   }, []);
 
   useEffect(() => {
-    if (searchQuery.trim().length > 0) {
-      const filtered = mockUniversities.filter((uni) => {
+    if (searchQuery.trim().length > 1) {
+      const filtered = allUniversities.filter((uni) => {
         const query = searchQuery.toLowerCase();
         return (
           uni.name.toLowerCase().includes(query) ||
           uni.country.toLowerCase().includes(query) ||
-          uni.location.toLowerCase().includes(query)
+          uni.location.toLowerCase().includes(query) ||
+          (uni.description ?? '').toLowerCase().includes(query)
         );
       });
       setSuggestions(filtered.slice(0, 5));
@@ -105,7 +106,7 @@ export default function Hero({ onSearch }: HeroProps) {
                   >
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                       <img
-                        src={uni.image}
+                        src={uni.image_url}
                         alt={uni.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { User, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { getUserProfile, createUserProfile } from '../lib/api';
@@ -21,10 +21,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadProfile = async (userId: string) => {
-    const userProfile = await getUserProfile(userId);
-    setProfile(userProfile);
-  };
+  const loadProfile = useCallback(async (userId: string) => {
+    try {
+      // Race profile loading against a 5s timeout
+      const userProfile = await Promise.race([
+        getUserProfile(userId),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000))
+      ]);
+      setProfile(userProfile);
+    } catch (err) {
+      console.error('Error in loadProfile:', err);
+      setProfile(null);
+    }
+  }, []);
 
   const refreshProfile = async () => {
     if (user) {
@@ -35,81 +44,129 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
 
-    // Timeout to ensure loading never gets stuck if Supabase is offline
-    const loadingTimeout = setTimeout(() => {
+    // Safety timeout for initial load
+    const initialTimeout = setTimeout(() => {
       if (!cancelled) setLoading(false);
-    }, 5000);
+    }, 6000);
 
-    // Get initial session — wrapped in try/catch so offline errors don't hang the app
+    // Initial session check
     supabase.auth.getSession()
-      .then(({ data: { session } }) => {
+      .then(async ({ data: { session } }) => {
         if (cancelled) return;
-        clearTimeout(loadingTimeout);
-        setUser(session?.user ?? null);
-        if (session?.user) loadProfile(session.user.id);
+        clearTimeout(initialTimeout);
+        
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        
+        if (currentUser) {
+          await loadProfile(currentUser.id);
+        }
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Session check error:', err);
         if (!cancelled) setLoading(false);
-        clearTimeout(loadingTimeout);
+        clearTimeout(initialTimeout);
       });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         if (cancelled) return;
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          try {
-            let userProfile = await getUserProfile(session.user.id);
-            if (!userProfile) {
-              const name = session.user.user_metadata?.full_name || session.user.email || '';
-              const email = session.user.email || '';
-              userProfile = await createUserProfile(session.user.id, name, email);
-            }
-            setProfile(userProfile);
-          } catch {
-            setProfile(null);
-          }
-        } else {
+        
+        const currentUser = session?.user ?? null;
+        
+        if (event === 'SIGNED_OUT' || !currentUser) {
+          setUser(null);
           setProfile(null);
+          setLoading(false);
+          return;
         }
-        setLoading(false);
+
+        setUser(currentUser);
+        
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || (event === 'INITIAL_SESSION' && !profile)) {
+          setLoading(true); // Re-show loading if we need to fetch profile
+          try {
+            let userProfile = await getUserProfile(currentUser.id);
+            if (!userProfile && event === 'SIGNED_IN') {
+              const name = currentUser.user_metadata?.full_name || currentUser.email || '';
+              const email = currentUser.email || '';
+              userProfile = await createUserProfile(currentUser.id, name, email);
+            }
+            if (!cancelled) setProfile(userProfile);
+          } catch (err) {
+            console.error('Auth change profile fetch error:', err);
+            if (!cancelled) setProfile(null);
+          }
+        }
+        
+        if (!cancelled) setLoading(false);
       }
     );
 
     return () => {
       cancelled = true;
-      clearTimeout(loadingTimeout);
+      clearTimeout(initialTimeout);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [loadProfile, profile]);
+
+  const withAuthTimeout = <T,>(promise: Promise<T>, timeoutMs = 7000): Promise<T> =>
+    Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error('Auth request timed out. Please check your connection.')), timeoutMs)
+      ),
+    ]);
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-      },
-    });
-
-    return { error };
+    try {
+      const { error } = await withAuthTimeout(
+        supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName } },
+        })
+      );
+      return { error };
+    } catch (err: any) {
+      return { error: { message: err.message } as any };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    return { error };
+    try {
+      const { error } = await withAuthTimeout(
+        supabase.auth.signInWithPassword({ email, password })
+      );
+      return { error };
+    } catch (err: any) {
+      return { error: { message: err.message } as any };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // 1. Optimistic UI update
     setUser(null);
     setProfile(null);
+    setLoading(false);
+
+    // 2. Clear local storage thoroughly
+    const keysToRemove = ['supabase.auth.token', 'sb-djnegfctttsxbjbheqag-auth-token'];
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('sb-') || k.includes('auth-token')) {
+        localStorage.removeItem(k);
+      }
+    });
+
+    // 3. Network sign out
+    try {
+      await withAuthTimeout(supabase.auth.signOut(), 3000);
+    } catch (err) {
+      console.warn('Network signout failed or timed out, but local state was cleared:', err);
+    }
   };
 
   return (
@@ -136,3 +193,4 @@ export function useAuth() {
   }
   return context;
 }
+

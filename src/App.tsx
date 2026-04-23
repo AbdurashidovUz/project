@@ -17,6 +17,12 @@ import { allUniversities } from './data/allUniversities';
 import { mockPrograms, Program } from './data/mockPrograms';
 import type { University } from './lib/database.types';
 
+const MIN_IELTS = Math.min(
+  ...allUniversities
+    .map((u) => u.ielts_requirement)
+    .filter((v): v is number => typeof v === 'number' && v > 0)
+);
+
 interface FilterState {
   countries: string[];
   tuitionRange: [number, number];
@@ -69,7 +75,7 @@ function App() {
   const [filters, setFilters] = useState<FilterState>({
     countries: [],
     tuitionRange: [0, 100000],
-    ieltsScore: 0,
+    ieltsScore: MIN_IELTS,
     hasScholarship: false,
     programLevel: [],
     deadline: { start: '', end: '' },
@@ -81,51 +87,54 @@ function App() {
   const loadUniversities = useCallback(async () => {
     setLoading(true);
     try {
+      // Fetch all universities for better client-side fuzzy search
       const data = await fetchUniversities({
         countries: filters.countries,
         tuitionRange: filters.tuitionRange,
-        ieltsScore: filters.ieltsScore,
+        ieltsScore: filters.ieltsScore > MIN_IELTS ? filters.ieltsScore : undefined,
         hasScholarship: filters.hasScholarship,
-        searchQuery: searchQuery || undefined,
+        // Don't pass searchQuery to Supabase to get the full filtered set for fuzzy matching
       });
 
-      if (data.length > 0) {
-        setUniversities(data);
-      } else {
-        // Fallback to full 146-university local dataset (from Hipolabs API via sql-to-ts)
-        let filtered = [...allUniversities];
+      let finalSet = data.length > 0 ? data : allUniversities;
 
-        if (searchQuery) {
-          const q = searchQuery.toLowerCase();
-          filtered = filtered.filter(
-            (u) =>
-              u.name.toLowerCase().includes(q) ||
-              u.country.toLowerCase().includes(q) ||
-              (u.location ?? '').toLowerCase().includes(q)
-          );
-        }
-
+      // Apply standard filters if we fell back to local data
+      if (data.length === 0) {
         if (filters.countries.length > 0) {
-          filtered = filtered.filter((u) => filters.countries.includes(u.country));
+          finalSet = finalSet.filter((u) => filters.countries.includes(u.country));
         }
-
         if (filters.hasScholarship) {
-          filtered = filtered.filter((u) => u.has_scholarship);
+          finalSet = finalSet.filter((u) => u.has_scholarship);
         }
-
-        if (filters.ieltsScore > 0) {
-          filtered = filtered.filter((u) => (u.ielts_requirement ?? 99) <= filters.ieltsScore);
+        if (filters.ieltsScore > MIN_IELTS) {
+          finalSet = finalSet.filter((u) => (u.ielts_requirement ?? 99) <= filters.ieltsScore);
         }
-
         if (filters.tuitionRange[0] > 0 || filters.tuitionRange[1] < 100000) {
-          filtered = filtered.filter((u) =>
+          finalSet = finalSet.filter((u) =>
             (u.tuition_min ?? 0) >= filters.tuitionRange[0] &&
             (u.tuition_max ?? 0) <= filters.tuitionRange[1]
           );
         }
-
-        setUniversities(filtered);
       }
+
+      // Fuzzy Search with Fuse.js for "Relevance"
+      if (searchQuery.trim()) {
+        const Fuse = (await import('fuse.js')).default;
+        const fuse = new Fuse(finalSet, {
+          keys: [
+            { name: 'name', weight: 1.0 },
+            { name: 'country', weight: 0.7 },
+            { name: 'location', weight: 0.5 },
+            { name: 'description', weight: 0.3 }
+          ],
+          threshold: 0.35, // Balanced sensitivity
+          distance: 100,
+          ignoreLocation: true
+        });
+        finalSet = fuse.search(searchQuery).map(result => result.item);
+      }
+
+      setUniversities(finalSet);
     } catch (error) {
       console.error('Error loading universities:', error);
       setUniversities(allUniversities);
@@ -133,53 +142,48 @@ function App() {
     setLoading(false);
   }, [searchQuery, filters]);
 
-  // Load programs from Supabase (or fall back to mock data)
+  // Load programs with fuzzy search
   const loadPrograms = useCallback(async () => {
     try {
-      const data = await fetchPrograms(programSearchQuery || undefined);
-      if (data.length > 0) {
-        // Adapt Supabase program data to match the Program interface
-        setPrograms(
-          data.map((p) => ({
-            id: p.id,
-            name: p.name,
-            type: p.type,
-            description: p.description,
-            countries: p.countries,
-            countryFlags: p.country_flags,
-            fundingAmount: p.funding_amount,
-            programLevel: p.program_level,
-            duration: p.duration,
-            fieldsOfStudy: p.fields_of_study,
-            eligibility: p.eligibility,
-            deadline: p.deadline,
-            urgency: p.urgency as 'high' | 'medium' | 'low' | undefined,
-            benefits: p.benefits,
-            applicationProcess: p.application_process,
-            website: p.website,
-            image: p.image_url,
-            hasFullFunding: p.has_full_funding,
-          }))
-        );
-      } else {
-        // Fallback
-        let filtered = mockPrograms;
-        if (programSearchQuery) {
-          const q = programSearchQuery.toLowerCase();
-          filtered = filtered.filter(
-            (p) =>
-              p.name.toLowerCase().includes(q) ||
-              p.countries.some((c) => c.toLowerCase().includes(q)) ||
-              p.type.toLowerCase().includes(q)
-          );
-        }
-        setPrograms(filtered);
+      const q = searchQuery || programSearchQuery;
+      const data = await fetchPrograms(undefined); // Get all to do fuzzy locally
+      
+      let finalSet = data.length > 0 ? data.map(p => ({
+        id: p.id,
+        name: p.name,
+        type: p.type,
+        description: p.description,
+        countries: p.countries,
+        countryFlags: p.country_flags,
+        fundingAmount: p.funding_amount,
+        programLevel: p.program_level,
+        duration: p.duration,
+        fieldsOfStudy: p.fields_of_study,
+        eligibility: p.eligibility,
+        deadline: p.deadline,
+        urgency: p.urgency as 'high' | 'medium' | 'low' | undefined,
+        benefits: p.benefits,
+        applicationProcess: p.application_process,
+        website: p.website,
+        image: p.image_url,
+        hasFullFunding: p.has_full_funding,
+      })) : mockPrograms;
+
+      if (q.trim()) {
+        const Fuse = (await import('fuse.js')).default;
+        const fuse = new Fuse(finalSet, {
+          keys: ['name', 'description', 'countries', 'fieldsOfStudy'],
+          threshold: 0.3
+        });
+        finalSet = fuse.search(q).map(result => result.item);
       }
+      
+      setPrograms(finalSet);
     } catch (error) {
       console.error('Error loading programs:', error);
       setPrograms(mockPrograms);
     }
-  }, [programSearchQuery]);
+  }, [searchQuery, programSearchQuery]);
 
   // Load saved universities for logged-in user or from localStorage if offline/guest
   const loadSavedUniversities = useCallback(async () => {
@@ -297,7 +301,7 @@ function App() {
     setFilters({
       countries: [],
       tuitionRange: [0, 100000],
-      ieltsScore: 0,
+      ieltsScore: MIN_IELTS,
       hasScholarship: false,
       programLevel: [],
       deadline: { start: '', end: '' },

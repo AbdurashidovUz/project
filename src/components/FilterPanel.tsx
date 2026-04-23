@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { allUniversities } from '../data/allUniversities';
 
 interface FilterState {
   countries: string[];
@@ -17,16 +18,26 @@ interface FilterPanelProps {
   onFilterChange: (filters: FilterState) => void;
 }
 
-const countries = [
-  { code: 'US', name: 'United States', flag: '🇺🇸' },
-  { code: 'UK', name: 'United Kingdom', flag: '🇬🇧' },
-  { code: 'CA', name: 'Canada', flag: '🇨🇦' },
-  { code: 'AU', name: 'Australia', flag: '🇦🇺' },
-  { code: 'DE', name: 'Germany', flag: '🇩🇪' },
-  { code: 'FR', name: 'France', flag: '🇫🇷' },
-  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
-];
+const countries = Array.from(
+  new Map(
+    allUniversities
+      .filter((u) => u.country)
+      .map((u) => [
+        u.country,
+        {
+          code: u.country.substring(0, 2).toUpperCase(),
+          name: u.country,
+          flag: u.country_flag || '🌍',
+        },
+      ])
+  ).values()
+).sort((a, b) => a.name.localeCompare(b.name));
+
+const MIN_IELTS = Math.min(
+  ...allUniversities
+    .map((u) => u.ielts_requirement)
+    .filter((v): v is number => typeof v === 'number' && v > 0)
+);
 
 const programLevels = ['Bachelor', 'Master', 'PhD'];
 
@@ -70,7 +81,7 @@ export default function FilterPanel({
     onFilterChange({
       countries: [],
       tuitionRange: [0, 100000],
-      ieltsScore: 0,
+      ieltsScore: MIN_IELTS,
       hasScholarship: false,
       programLevel: [],
       deadline: { start: '', end: '' },
@@ -181,7 +192,7 @@ export default function FilterPanel({
                 onClick={() =>
                   onFilterChange({
                     ...filters,
-                    ieltsScore: Math.max(0, filters.ieltsScore - 0.5),
+                    ieltsScore: Math.max(MIN_IELTS, filters.ieltsScore - 0.5),
                   })
                 }
                 className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center font-semibold text-gray-700 transition-colors"

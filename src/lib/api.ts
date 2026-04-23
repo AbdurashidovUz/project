@@ -154,14 +154,15 @@ export async function unsaveUniversity(userId: string, universityId: string): Pr
 // ==================== User Profile ====================
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
+  const { data, error } = await withTimeout(
+    supabase.from('user_profiles').select('*').eq('id', userId).single(),
+    { data: null, error: new Error('timeout') } as any
+  );
 
   if (error) {
-    console.error('Error fetching user profile:', error);
+    if (error.message !== 'timeout') {
+      console.error('Error fetching user profile:', error);
+    }
     return null;
   }
 
@@ -172,13 +173,16 @@ export async function updateUserProfile(
   userId: string,
   updates: Partial<Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>>
 ): Promise<UserProfile | null> {
-  const { data, error } = await supabase
-    .from('user_profiles')
-    // @ts-ignore: IDE erroneously infers never for this param despite valid schema
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq('id', userId)
-    .select()
-    .single();
+  const { data, error } = await withTimeout(
+    supabase
+      .from('user_profiles')
+      // @ts-ignore
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', userId)
+      .select()
+      .single(),
+    { data: null, error: new Error('timeout') } as any
+  );
 
   if (error) {
     console.error('Error updating user profile:', error);
@@ -193,17 +197,20 @@ export async function createUserProfile(
   fullName: string,
   email: string
 ): Promise<UserProfile | null> {
-  const { data, error } = await supabase
-    .from('user_profiles')
-    // @ts-ignore: IDE erroneously infers never for this param despite valid schema
-    .insert({
-      id: userId,
-      full_name: fullName,
-      email: email,
-      preferred_countries: [],
-    })
-    .select()
-    .single();
+  const { data, error } = await withTimeout(
+    supabase
+      .from('user_profiles')
+      // @ts-ignore
+      .insert({
+        id: userId,
+        full_name: fullName,
+        email: email,
+        preferred_countries: [],
+      })
+      .select()
+      .single(),
+    { data: null, error: new Error('timeout') } as any
+  );
 
   if (error) {
     console.error('Error creating user profile:', error);

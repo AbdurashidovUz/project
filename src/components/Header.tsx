@@ -121,9 +121,9 @@ export default function Header({ onShowSaved, onHomeClick }: HeaderProps) {
             </nav>
 
             <div className="hidden md:flex items-center space-x-4">
-              {loading ? (
+              {loading && !user ? (
                 <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
-              ) : user && profile ? (
+              ) : user ? (
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -134,9 +134,9 @@ export default function Header({ onShowSaved, onHomeClick }: HeaderProps) {
                     }`}
                   >
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-teal-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                      {getInitials(profile.full_name || 'U')}
+                      {getInitials(profile?.full_name || user.email || 'U')}
                     </div>
-                    <span className="max-w-[120px] truncate">{profile.full_name}</span>
+                    <span className="max-w-[120px] truncate">{profile?.full_name || user.email?.split('@')[0]}</span>
                     <ChevronDown
                       size={16}
                       className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
@@ -146,8 +146,8 @@ export default function Header({ onShowSaved, onHomeClick }: HeaderProps) {
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-semibold text-gray-800">{profile.full_name}</p>
-                        <p className="text-xs text-gray-500">{profile.email}</p>
+                        <p className="text-sm font-semibold text-gray-800">{profile?.full_name || user.email?.split('@')[0]}</p>
+                        <p className="text-xs text-gray-500">{profile?.email || user.email}</p>
                       </div>
                       <button
                         onClick={() => {
@@ -242,16 +242,16 @@ export default function Header({ onShowSaved, onHomeClick }: HeaderProps) {
               >
                 AI Match
               </a>
-              {user && profile ? (
+              {user ? (
                 <>
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex items-center space-x-3 mb-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-600 rounded-full flex items-center justify-center text-white font-bold">
-                        {getInitials(profile.full_name || 'U')}
+                        {getInitials(profile?.full_name || user.email || 'U')}
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-800">{profile.full_name}</p>
-                        <p className="text-xs text-gray-500">{profile.email}</p>
+                        <p className="font-semibold text-gray-800">{profile?.full_name || user.email?.split('@')[0]}</p>
+                        <p className="text-xs text-gray-500">{profile?.email || user.email}</p>
                       </div>
                     </div>
                     <button
