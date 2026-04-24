@@ -49,13 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!cancelled) setLoading(false);
     }, 6000);
 
-    // Initial session check
-    supabase.auth.getSession()
-      .then(async ({ data: { session } }) => {
+    // Initial session check - Use getUser() for strict verification against server
+    supabase.auth.getUser()
+      .then(async ({ data: { user: currentUser } }) => {
         if (cancelled) return;
         clearTimeout(initialTimeout);
         
-        const currentUser = session?.user ?? null;
         setUser(currentUser);
         
         if (currentUser) {
@@ -74,7 +73,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         if (cancelled) return;
         
-        const currentUser = session?.user ?? null;
+        let currentUser = session?.user ?? null;
+
+        // If we have a session but no user from server-side perspective, force logout
+        if (event === 'INITIAL_SESSION' && session) {
+          const { data: { user: verifiedUser } } = await supabase.auth.getUser();
+          if (!verifiedUser) {
+            signOut();
+            return;
+          }
+          currentUser = verifiedUser;
+        }
         
         if (event === 'SIGNED_OUT' || !currentUser) {
           setUser(null);
@@ -86,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentUser);
         
         if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || (event === 'INITIAL_SESSION' && !profile)) {
-          setLoading(true); // Re-show loading if we need to fetch profile
+          setLoading(true);
           try {
             let userProfile = await getUserProfile(currentUser.id);
             if (!userProfile && event === 'SIGNED_IN') {
@@ -94,6 +103,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               const email = currentUser.email || '';
               userProfile = await createUserProfile(currentUser.id, name, email);
             }
+
+            // Sync KAMRONBEL name issue: if metadata has a name but DB doesn't, update DB
+            const metadataName = currentUser.user_metadata?.full_name;
+            if (userProfile && metadataName && !userProfile.full_name) {
+              const { updateUserProfile } = await import('../lib/api');
+              userProfile = await updateUserProfile(currentUser.id, { full_name: metadataName });
+            }
+
             if (!cancelled) setProfile(userProfile);
           } catch (err) {
             console.error('Auth change profile fetch error:', err);
@@ -110,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(initialTimeout);
       subscription.unsubscribe();
     };
-  }, [loadProfile, profile]);
+  }, [loadProfile]);
 
   const withAuthTimeout = <T,>(promise: Promise<T>, timeoutMs = 7000): Promise<T> =>
     Promise.race([

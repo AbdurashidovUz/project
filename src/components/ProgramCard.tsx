@@ -15,11 +15,8 @@ export default function ProgramCard({
     isSaved = false,
     onToggleSave,
 }: ProgramCardProps) {
-    const [saved, setSaved] = useState(isSaved);
-
     const handleSaveToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setSaved(!saved);
         onToggleSave?.(program.id);
     };
 
@@ -65,11 +62,11 @@ export default function ProgramCard({
                 <button
                     onClick={handleSaveToggle}
                     className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 z-10"
-                    aria-label={saved ? 'Unsave program' : 'Save program'}
+                    aria-label={isSaved ? 'Unsave program' : 'Save program'}
                 >
                     <Heart
                         size={20}
-                        className={`transition-colors ${saved ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                        className={`transition-colors ${isSaved ? 'fill-red-500 text-red-500' : 'text-gray-400'
                             }`}
                     />
                 </button>

@@ -340,7 +340,6 @@ export default function ProgramModal({ program, isOpen, onClose }: ProgramModalP
                             Close
                         </button>
                         <div className="flex items-center space-x-3">
-                            <button className="btn-secondary">Save Program</button>
                             <a
                                 href={program.website}
                                 target="_blank"

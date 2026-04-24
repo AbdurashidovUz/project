@@ -12,7 +12,6 @@ import Chatbot from './components/Chatbot';
 import Footer from './components/Footer';
 import { useAuth } from './contexts/AuthContext';
 import { fetchUniversities, fetchPrograms, getSavedUniversities, saveUniversity, unsaveUniversity } from './lib/api';
-import { mockUniversities, type MockUniversity } from './data/mockUniversities';
 import { allUniversities } from './data/allUniversities';
 import { mockPrograms, Program } from './data/mockPrograms';
 import type { University } from './lib/database.types';
@@ -32,34 +31,6 @@ interface FilterState {
   deadline: { start: string; end: string };
 }
 
-// Adapter: convert mock university to database type
-function adaptMockUniversity(mock: MockUniversity): University {
-  return {
-    id: mock.id,
-    name: mock.name,
-    country: mock.country,
-    country_flag: mock.countryFlag,
-    location: mock.location,
-    description: mock.description,
-    tuition_range: mock.tuitionRange,
-    ielts_requirement: mock.ieltsRequirement,
-    deadline: mock.deadline,
-    has_scholarship: mock.hasScholarship,
-    image_url: mock.image,
-    urgency: mock.urgency || null,
-    ranking: mock.ranking ?? null,
-    acceptance_rate: mock.acceptanceRate ?? null,
-    student_population: mock.studentPopulation ?? null,
-    international_students_pct: mock.internationalStudentsPct ?? null,
-    programs_offered: mock.programsOffered ?? null,
-    website: mock.website ?? null,
-    admission_url: mock.admissionUrl ?? null,
-    tuition_min: mock.tuitionMin ?? null,
-    tuition_max: mock.tuitionMax ?? null,
-    created_at: new Date().toISOString(),
-  };
-}
-
 function App() {
   const { user } = useAuth();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -70,6 +41,7 @@ function App() {
   const [universities, setUniversities] = useState<University[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [savedUniversityIds, setSavedUniversityIds] = useState<Set<string>>(new Set());
+  const [savedProgramIds, setSavedProgramIds] = useState<Set<string>>(new Set());
   const [compareList, setCompareList] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
@@ -87,18 +59,15 @@ function App() {
   const loadUniversities = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch all universities for better client-side fuzzy search
       const data = await fetchUniversities({
         countries: filters.countries,
         tuitionRange: filters.tuitionRange,
         ieltsScore: filters.ieltsScore > MIN_IELTS ? filters.ieltsScore : undefined,
         hasScholarship: filters.hasScholarship,
-        // Don't pass searchQuery to Supabase to get the full filtered set for fuzzy matching
       });
 
       let finalSet = data.length > 0 ? data : allUniversities;
 
-      // Apply standard filters if we fell back to local data
       if (data.length === 0) {
         if (filters.countries.length > 0) {
           finalSet = finalSet.filter((u) => filters.countries.includes(u.country));
@@ -117,7 +86,6 @@ function App() {
         }
       }
 
-      // Fuzzy Search with Fuse.js for "Relevance"
       if (searchQuery.trim()) {
         const Fuse = (await import('fuse.js')).default;
         const fuse = new Fuse(finalSet, {
@@ -127,7 +95,7 @@ function App() {
             { name: 'location', weight: 0.5 },
             { name: 'description', weight: 0.3 }
           ],
-          threshold: 0.35, // Balanced sensitivity
+          threshold: 0.35,
           distance: 100,
           ignoreLocation: true
         });
@@ -146,7 +114,7 @@ function App() {
   const loadPrograms = useCallback(async () => {
     try {
       const q = searchQuery || programSearchQuery;
-      const data = await fetchPrograms(undefined); // Get all to do fuzzy locally
+      const data = await fetchPrograms(undefined);
       
       let finalSet = data.length > 0 ? data.map(p => ({
         id: p.id,
@@ -185,8 +153,9 @@ function App() {
     }
   }, [searchQuery, programSearchQuery]);
 
-  // Load saved universities for logged-in user or from localStorage if offline/guest
-  const loadSavedUniversities = useCallback(async () => {
+  // Load saved items
+  const loadSavedItems = useCallback(async () => {
+    // 1. Universities
     if (user) {
       const saved = await getSavedUniversities(user.id);
       setSavedUniversityIds(new Set(saved));
@@ -195,12 +164,20 @@ function App() {
         const localSaved = localStorage.getItem('saved_universities');
         if (localSaved) {
           setSavedUniversityIds(new Set(JSON.parse(localSaved)));
-          return;
         }
       } catch (e) {
         console.warn('Could not load saved universities from local storage');
       }
-      setSavedUniversityIds(new Set());
+    }
+
+    // 2. Programs
+    try {
+      const localSavedPrograms = localStorage.getItem('saved_programs');
+      if (localSavedPrograms) {
+        setSavedProgramIds(new Set(JSON.parse(localSavedPrograms)));
+      }
+    } catch (e) {
+      console.warn('Could not load saved programs from local storage');
     }
   }, [user]);
 
@@ -213,8 +190,8 @@ function App() {
   }, [loadPrograms]);
 
   useEffect(() => {
-    loadSavedUniversities();
-  }, [loadSavedUniversities]);
+    loadSavedItems();
+  }, [loadSavedItems]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -232,25 +209,8 @@ function App() {
     }
   };
 
-  const handleViewDetails = (university: University) => {
-    setSelectedUniversity(university);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedUniversity(null);
-  };
-
-  const handleViewProgramDetails = (program: Program) => {
-    setSelectedProgram(program);
-  };
-
-  const handleCloseProgramModal = () => {
-    setSelectedProgram(null);
-  };
-
-  const handleToggleSave = async (universityId: string) => {
+  const handleToggleSaveUniversity = async (universityId: string) => {
     if (!user) {
-      // Offline/Guest fallback: save to localStorage
       setSavedUniversityIds((prev) => {
         const newSet = new Set(prev);
         if (newSet.has(universityId)) {
@@ -280,6 +240,19 @@ function App() {
         setSavedUniversityIds((prev) => new Set(prev).add(universityId));
       }
     }
+  };
+
+  const handleToggleSaveProgram = (programId: string) => {
+    setSavedProgramIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(programId)) {
+        newSet.delete(programId);
+      } else {
+        newSet.add(programId);
+      }
+      localStorage.setItem('saved_programs', JSON.stringify(Array.from(newSet)));
+      return newSet;
+    });
   };
 
   const handleToggleCompare = (universityId: string) => {
@@ -334,10 +307,10 @@ function App() {
 
               <UniversityGrid
                 universities={displayedUniversities}
-                onViewDetails={handleViewDetails}
+                onViewDetails={(u) => setSelectedUniversity(u)}
                 onToggleFilters={() => setIsFilterOpen(!isFilterOpen)}
                 savedUniversities={savedUniversityIds}
-                onToggleSave={handleToggleSave}
+                onToggleSave={handleToggleSaveUniversity}
                 compareList={compareList}
                 onToggleCompare={handleToggleCompare}
                 loading={loading}
@@ -361,7 +334,9 @@ function App() {
             </div>
             <ProgramGrid
               programs={programs}
-              onViewDetails={handleViewProgramDetails}
+              onViewDetails={(p) => setSelectedProgram(p)}
+              savedPrograms={savedProgramIds}
+              onToggleSave={handleToggleSaveProgram}
             />
           </div>
         </section>
@@ -383,13 +358,13 @@ function App() {
       <UniversityModal
         university={selectedUniversity}
         isOpen={!!selectedUniversity}
-        onClose={handleCloseModal}
+        onClose={() => setSelectedUniversity(null)}
       />
 
       <ProgramModal
         program={selectedProgram}
         isOpen={!!selectedProgram}
-        onClose={handleCloseProgramModal}
+        onClose={() => setSelectedProgram(null)}
       />
 
       <Chatbot />

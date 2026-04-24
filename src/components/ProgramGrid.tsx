@@ -7,34 +7,25 @@ interface ProgramGridProps {
     programs: Program[];
     onViewDetails: (program: Program) => void;
     onToggleFilters?: () => void;
+    savedPrograms: Set<string>;
+    onToggleSave: (id: string) => void;
 }
 
 export default function ProgramGrid({
     programs,
     onViewDetails,
     onToggleFilters,
+    savedPrograms,
+    onToggleSave,
 }: ProgramGridProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [sortBy, setSortBy] = useState('relevance');
-    const [savedPrograms, setSavedPrograms] = useState<Set<string>>(new Set());
 
     const itemsPerPage = 9;
     const totalPages = Math.ceil(programs.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPrograms = programs.slice(startIndex, endIndex);
-
-    const handleToggleSave = (id: string) => {
-        setSavedPrograms((prev) => {
-            const newSet = new Set(prev);
-            if (newSet.has(id)) {
-                newSet.delete(id);
-            } else {
-                newSet.add(id);
-            }
-            return newSet;
-        });
-    };
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -103,7 +94,7 @@ export default function ProgramGrid({
                         program={program}
                         onViewDetails={onViewDetails}
                         isSaved={savedPrograms.has(program.id)}
-                        onToggleSave={handleToggleSave}
+                        onToggleSave={onToggleSave}
                     />
                 ))}
             </div>
