@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { allUniversities } from '../data/allUniversities';
 
@@ -47,6 +47,12 @@ export default function FilterPanel({
   filters,
   onFilterChange,
 }: FilterPanelProps) {
+  const [localFilters, setLocalFilters] = useState<FilterState>(filters);
+
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
   const [expandedSections, setExpandedSections] = useState({
     country: true,
     tuition: true,
@@ -64,28 +70,30 @@ export default function FilterPanel({
   };
 
   const handleCountryToggle = (countryName: string) => {
-    const newCountries = filters.countries.includes(countryName)
-      ? filters.countries.filter((c) => c !== countryName)
-      : [...filters.countries, countryName];
-    onFilterChange({ ...filters, countries: newCountries });
+    const newCountries = localFilters.countries.includes(countryName)
+      ? localFilters.countries.filter((c) => c !== countryName)
+      : [...localFilters.countries, countryName];
+    setLocalFilters({ ...localFilters, countries: newCountries });
   };
 
   const handleProgramLevelToggle = (level: string) => {
-    const newLevels = filters.programLevel.includes(level)
-      ? filters.programLevel.filter((l) => l !== level)
-      : [...filters.programLevel, level];
-    onFilterChange({ ...filters, programLevel: newLevels });
+    const newLevels = localFilters.programLevel.includes(level)
+      ? localFilters.programLevel.filter((l) => l !== level)
+      : [...localFilters.programLevel, level];
+    setLocalFilters({ ...localFilters, programLevel: newLevels });
   };
 
   const handleReset = () => {
-    onFilterChange({
+    const emptyFilters = {
       countries: [],
-      tuitionRange: [0, 100000],
+      tuitionRange: [0, 100000] as [number, number],
       ieltsScore: MIN_IELTS,
       hasScholarship: false,
       programLevel: [],
       deadline: { start: '', end: '' },
-    });
+    };
+    setLocalFilters(emptyFilters);
+    onFilterChange(emptyFilters);
   };
 
   const filterContent = (
@@ -126,7 +134,7 @@ export default function FilterPanel({
                 >
                   <input
                     type="checkbox"
-                    checked={filters.countries.includes(country.name)}
+                    checked={localFilters.countries.includes(country.name)}
                     onChange={() => handleCountryToggle(country.name)}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
@@ -153,19 +161,19 @@ export default function FilterPanel({
           {expandedSections.tuition && (
             <div className="space-y-4">
               <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>${filters.tuitionRange[0].toLocaleString()}</span>
-                <span>${filters.tuitionRange[1].toLocaleString()}</span>
+                <span>${localFilters.tuitionRange[0].toLocaleString()}</span>
+                <span>${localFilters.tuitionRange[1].toLocaleString()}</span>
               </div>
               <input
                 type="range"
                 min="0"
                 max="100000"
                 step="5000"
-                value={filters.tuitionRange[1]}
+                value={localFilters.tuitionRange[1]}
                 onChange={(e) =>
-                  onFilterChange({
-                    ...filters,
-                    tuitionRange: [filters.tuitionRange[0], parseInt(e.target.value)],
+                  setLocalFilters({
+                    ...localFilters,
+                    tuitionRange: [localFilters.tuitionRange[0], parseInt(e.target.value)],
                   })
                 }
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
@@ -190,9 +198,9 @@ export default function FilterPanel({
             <div className="flex items-center space-x-4">
               <button
                 onClick={() =>
-                  onFilterChange({
-                    ...filters,
-                    ieltsScore: Math.max(MIN_IELTS, filters.ieltsScore - 0.5),
+                  setLocalFilters({
+                    ...localFilters,
+                    ieltsScore: Math.max(MIN_IELTS, localFilters.ieltsScore - 0.5),
                   })
                 }
                 className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center font-semibold text-gray-700 transition-colors"
@@ -201,15 +209,15 @@ export default function FilterPanel({
               </button>
               <div className="flex-1 text-center">
                 <div className="text-2xl font-bold text-blue-600">
-                  {filters.ieltsScore.toFixed(1)}
+                  {localFilters.ieltsScore.toFixed(1)}
                 </div>
                 <div className="text-xs text-gray-500">out of 9.0</div>
               </div>
               <button
                 onClick={() =>
-                  onFilterChange({
-                    ...filters,
-                    ieltsScore: Math.min(9, filters.ieltsScore + 0.5),
+                  setLocalFilters({
+                    ...localFilters,
+                    ieltsScore: Math.min(9, localFilters.ieltsScore + 0.5),
                   })
                 }
                 className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center font-semibold text-gray-700 transition-colors"
@@ -236,14 +244,14 @@ export default function FilterPanel({
             <label className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
               <span className="text-sm text-gray-700">Only show universities with scholarships</span>
               <div
-                className={`relative w-12 h-6 rounded-full transition-colors ${filters.hasScholarship ? 'bg-blue-600' : 'bg-gray-300'
+                className={`relative w-12 h-6 rounded-full transition-colors ${localFilters.hasScholarship ? 'bg-blue-600' : 'bg-gray-300'
                   }`}
                 onClick={() =>
-                  onFilterChange({ ...filters, hasScholarship: !filters.hasScholarship })
+                  setLocalFilters({ ...localFilters, hasScholarship: !localFilters.hasScholarship })
                 }
               >
                 <div
-                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${filters.hasScholarship ? 'transform translate-x-6' : ''
+                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${localFilters.hasScholarship ? 'transform translate-x-6' : ''
                     }`}
                 />
               </div>
@@ -272,7 +280,7 @@ export default function FilterPanel({
                 >
                   <input
                     type="checkbox"
-                    checked={filters.programLevel.includes(level)}
+                    checked={localFilters.programLevel.includes(level)}
                     onChange={() => handleProgramLevelToggle(level)}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
@@ -285,7 +293,7 @@ export default function FilterPanel({
       </div>
 
       <div className="p-6 border-t border-gray-200 space-y-3">
-        <button className="w-full btn-primary">Apply Filters</button>
+        <button onClick={() => { onFilterChange(localFilters); onClose(); }} className="w-full btn-primary">Apply Filters</button>
         <button onClick={handleReset} className="w-full btn-ghost">
           Reset All
         </button>

@@ -391,7 +391,40 @@ function generateDescription(name, country, location) {
     `With a long tradition of academic excellence, ${name} in ${location} offers world-class education and research opportunities. The university is committed to fostering international talent and cross-cultural collaboration.`,
     `${name} stands out for its rigorous academic standards and internationally recognized degrees. Located in ${location}, it provides a welcoming environment for international students alongside state-of-the-art research infrastructure.`,
   ];
-  return pick(templates);
+  
+  const allPrograms = ['Computer Science', 'Business Administration', 'Data Science', 'Engineering', 'Medicine', 'Law', 'Psychology', 'Economics', 'Biology', 'Physics', 'Artificial Intelligence', 'Architecture', 'Finance'];
+  let selected = [];
+  
+  if (name.match(/tech|institute|polytechnic|engineering/i)) {
+      selected = ['Computer Science', 'Engineering', 'Data Science', 'Artificial Intelligence', 'Physics'];
+  } else if (name.match(/business|economics|management/i)) {
+      selected = ['Business Administration', 'Economics', 'Finance', 'Data Science'];
+  } else {
+      // Pick 4 programs deterministically based on name
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) & 0xffff;
+      
+      const numPrograms = allPrograms.length;
+      selected.push(allPrograms[hash % numPrograms]);
+      selected.push(allPrograms[(hash * 2) % numPrograms]);
+      selected.push(allPrograms[(hash * 3) % numPrograms]);
+      selected.push(allPrograms[(hash * 4) % numPrograms]);
+      
+      // Ensure Computer Science is common (present in ~75% of generic universities)
+      if (hash % 4 !== 0 && !selected.includes('Computer Science')) {
+          selected[0] = 'Computer Science';
+      }
+      
+      // Make unique
+      selected = [...new Set(selected)];
+  }
+
+  // Use a deterministic template selection
+  let hashTemplate = 0;
+  for (let i = 0; i < name.length; i++) hashTemplate = (hashTemplate * 31 + name.charCodeAt(i)) & 0xffff;
+  const base = templates[hashTemplate % templates.length];
+
+  return `${base} Popular programs include ${selected.join(', ')}.`;
 }
 
 function generateUrgency(deadline) {

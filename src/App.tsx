@@ -66,7 +66,10 @@ function App() {
         hasScholarship: filters.hasScholarship,
       });
 
-      let finalSet = data.length > 0 ? data : allUniversities;
+      let finalSet = data.length > 0 ? data.map(dbUni => {
+        const localUni = allUniversities.find(u => u.name === dbUni.name);
+        return localUni ? { ...dbUni, description: localUni.description } : dbUni;
+      }) : allUniversities;
 
       if (data.length === 0) {
         if (filters.countries.length > 0) {
