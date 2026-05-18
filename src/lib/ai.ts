@@ -173,7 +173,7 @@ export function getRecommendations(
 // ==================== Gemini AI Chatbot ====================
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-3.1-flash-lite';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 // Cache for university data so we don't re-fetch every message
@@ -209,53 +209,40 @@ async function getProgramData(): Promise<Program[]> {
 }
 
 function buildSystemPrompt(universities: University[], programs: Program[]): string {
-  // Strip heavy properties like long descriptions or image URLs to optimize JSON size,
-  // but keep all critical data for the AI to reason about every single university.
-  const uniData = universities.map(u => ({
-    name: u.name,
-    country: u.country,
-    tuition: u.tuition_range,
-    ielts: u.ielts_requirement,
-    deadline: u.deadline,
-    scholarships: u.has_scholarship,
-    ranking: u.ranking || 'Unranked',
-    acceptance: u.acceptance_rate ? `${u.acceptance_rate}%` : 'Unknown'
-  }));
+  // Format universities as a compact, readable table for the AI (much easier to parse than raw JSON)
+  const uniLines = universities.map((u, i) =>
+    `${i + 1}. ${u.name} | ${u.country} | Tuition: ${u.tuition_range} | IELTS: ${u.ielts_requirement}+ | Deadline: ${u.deadline} | Ranking: ${u.ranking ?? 'N/A'} | Acceptance: ${u.acceptance_rate != null ? u.acceptance_rate + '%' : 'N/A'} | Scholarship: ${u.has_scholarship ? 'Yes' : 'No'}`
+  ).join('\n');
 
-  const progData = programs.map(p => ({
-    name: p.name,
-    type: p.type,
-    funding: p.fundingAmount,
-    countries: p.countries.join(', '),
-    deadline: p.deadline
-  }));
+  const progLines = programs.map((p, i) =>
+    `${i + 1}. ${p.name} | Type: ${p.type} | Funding: ${p.fundingAmount} | Countries: ${p.countries.join(', ')} | Deadline: ${p.deadline}`
+  ).join('\n');
 
-  return `You are UniSearch AI Assistant — a highly intelligent, precise, and friendly advisor for international students looking for universities abroad. 
-You are powered by a massive, real-world database of universities and scholarships which has been injected directly into your context below.
+  return `You are UniSearch AI — a smart, friendly university advisor for international students. Your job is to help students find the right university or scholarship using the database provided below.
 
-Your personality:
-- Friendly, encouraging, and highly professional
-- Give extremely specific, data-driven answers using ONLY the injected database
-- Be concise but informative — use bullet points and formatting
-- When mentioning universities, always include relevant stats (tuition, IELTS, ranking)
-- If asked about a university not in the database, clearly state that it is not in your current database.
-- Never hallucinate data.
+## Your Rules
+- ONLY use data from the database below. Never invent or guess data.
+- If a university is NOT in the database, say so clearly.
+- When listing universities, always show: name, country, tuition, IELTS requirement, and deadline.
+- Keep answers concise but complete. Use bullet points and bold for key facts.
+- If the user's question is vague or ambiguous, ask ONE clarifying question before answering.
+- If the user asks a follow-up (e.g. "what about Canada?" or "and the cheapest one?"), interpret it in the context of the previous conversation.
+- If the user says something like "hi" or "hello", greet them warmly and briefly explain what you can do.
+- For comparisons, use a markdown table.
+- Always end with a helpful tip or next step suggestion.
 
-[DATABASE INJECTION BEGIN]
+## University Database (${universities.length} universities)
+${uniLines}
 
-=== UNIVERSITIES (${uniData.length} records) ===
-${JSON.stringify(uniData)}
+## Scholarship Programs (${programs.length} programs)
+${progLines}
 
-=== SCHOLARSHIP PROGRAMS (${progData.length} records) ===
-${JSON.stringify(progData)}
-
-[DATABASE INJECTION END]
-
-Instructions for answering:
-1. If the user asks for cheapest/most affordable options, scan the entire database array and pick the actual lowest tuition ones.
-2. If the user asks about a specific country, list the best matches from that country based on their query.
-3. If they ask about scholarships, mention the ones from the SCHOLARSHIP PROGRAMS array, or universities with scholarships: true.
-4. Format your responses beautifully using markdown.`;
+## Examples of how to answer well
+- "cheapest universities in Germany" → sort the Germany entries by lowest tuition, list top 3-5 with stats
+- "do I qualify for MIT with IELTS 7.0?" → check MIT's IELTS requirement, give a direct yes/no with reasoning
+- "compare Oxford and Cambridge" → markdown table with tuition, IELTS, ranking, acceptance rate
+- "I have $30k budget" → filter universities where tuition_min is ≤ 30000, list them
+- "what about scholarships?" (follow-up) → refer back to the universities mentioned, check if they have scholarships: Yes`;
 }
 
 async function callGemini(
@@ -298,10 +285,17 @@ async function callGemini(
         },
         contents,
         generationConfig: {
-          temperature: 0.2, // Low temperature for high accuracy on database facts
-          topP: 0.9,
-          maxOutputTokens: 1024,
+          temperature: 0.3,   // Slightly higher = more natural language, still grounded
+          topP: 0.95,
+          topK: 40,
+          maxOutputTokens: 2048, // Increased so answers never get cut off
         },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+        ],
       }),
     });
 
